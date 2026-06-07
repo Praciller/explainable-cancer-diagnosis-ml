@@ -1,0 +1,21 @@
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    MPLBACKEND=Agg \
+    PIP_DEFAULT_TIMEOUT=120
+
+WORKDIR /app
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+EXPOSE 8000
+
+CMD ["sh", "-c", "if [ ! -f models/best_model.joblib ]; then python -m src.data.load_dataset && python -m src.data.validate_dataset && python -m src.evaluation.generate_eda && python -m src.models.train_baseline --seed 42 && python -m src.models.train_pytorch_mlp --seed 42 --epochs 40 && python -m src.evaluation.evaluate_models && python -m src.evaluation.error_analysis && python -m src.explainability.explain_model; fi && uvicorn src.api.main:app --host 0.0.0.0 --port 8000"]

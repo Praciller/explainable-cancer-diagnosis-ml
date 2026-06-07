@@ -1,0 +1,13 @@
+/.venv
+/data
+/docs
+/models
+/notebooks
+/reports
+/src
+/tests
+/frontend/node_modules
+/frontend/dist
+/Dockerfile.api
+/Dockerfile.frontend
+/docker-compose.yml
