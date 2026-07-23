@@ -5,8 +5,8 @@ export function ConfusionMatrixViewer() {
   return (
     <ReportFigure
       src={reportUrl("confusion_matrix.png")}
-      alt="Confusion matrix for the selected model"
-      caption="Errors are split by malignant and benign class."
+      alt="Governed test confusion matrix for the selected model, ordered malignant then benign"
+      caption="Rows are actual labels and columns are model classifications, ordered malignant then benign."
     />
   );
 }

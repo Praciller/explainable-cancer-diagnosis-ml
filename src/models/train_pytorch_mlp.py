@@ -17,7 +17,13 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader, Dataset
 
-from src.config import FIGURES_DIR, MODELS_DIR, RANDOM_SEED, REPORTS_DIR
+from src.config import MODELS_DIR, RANDOM_SEED, REPORTS_DIR
+from src.contracts import (
+    CALIBRATION_STATUS,
+    DECISION_THRESHOLD,
+    label_contract,
+    predictions_from_malignant_scores,
+)
 from src.data.load_dataset import load_dataset_frame
 from src.features.preprocess import prepare_scaled_splits, split_dataset
 from src.utils.metrics import classification_metrics
@@ -85,8 +91,9 @@ def _predict(model: TabularMLP, features: np.ndarray) -> tuple[np.ndarray, np.nd
         benign_probability = torch.sigmoid(
             model(torch.tensor(features, dtype=torch.float32))
         ).numpy()
-    prediction = (benign_probability >= 0.5).astype(int)
-    return prediction, 1 - benign_probability
+    malignant_score = 1 - benign_probability
+    prediction = predictions_from_malignant_scores(malignant_score)
+    return prediction, malignant_score
 
 
 def _plot_history(history: dict[str, list[float]], output_path: Path) -> None:
@@ -170,8 +177,12 @@ def train_pytorch_mlp(
                     break
 
         model.load_state_dict(best_state)
-        test_prediction, malignant_probability = _predict(model, scaled.X_test)
-        metrics = classification_metrics(scaled.y_test, test_prediction, malignant_probability)
+        validation_prediction, malignant_score = _predict(model, scaled.X_validation)
+        metrics = classification_metrics(
+            scaled.y_validation,
+            validation_prediction,
+            malignant_score,
+        )
         metrics["epochs_trained"] = len(history["train_loss"])
         metrics["best_validation_loss"] = best_validation_loss
         if tracker is not None:
@@ -188,12 +199,15 @@ def train_pytorch_mlp(
         "scaler_mean": scaled.scaler.mean_.tolist(),
         "scaler_scale": scaled.scaler.scale_.tolist(),
         "target_names": bundle.target_names,
+        "label_contract": label_contract(),
+        "decision_threshold": DECISION_THRESHOLD,
+        "calibration_status": CALIBRATION_STATUS,
         "random_seed": seed,
     }
     torch.save(checkpoint, models_dir / "pytorch_mlp.pt")
     reports_dir.mkdir(parents=True, exist_ok=True)
     (reports_dir / "pytorch_mlp_metrics.json").write_text(
-        json.dumps({"test": metrics, "history": history}, indent=2),
+        json.dumps({"validation": metrics, "history": history}, indent=2),
         encoding="utf-8",
     )
     _plot_history(history, figures_dir / "training_curve.png")
@@ -225,7 +239,7 @@ def main() -> None:
         patience=args.patience,
         mlflow_enabled=args.mlflow,
     )
-    print(f"PyTorch MLP test ROC-AUC: {result.metrics['roc_auc']:.4f}")
+    print(f"PyTorch MLP validation ROC-AUC: {result.metrics['roc_auc']:.4f}")
 
 
 if __name__ == "__main__":

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import Any, Iterator
+from typing import Any
 
 
 @contextmanager
@@ -19,7 +20,7 @@ def optional_mlflow_run(
     except ImportError as exc:
         raise RuntimeError("MLflow was enabled but is not installed.") from exc
 
-    mlflow.set_experiment("explainable-cancer-diagnosis")
-    with mlflow.start_run(run_name=run_name) as run:
+    mlflow.set_experiment("explainable-wdbc-classification")
+    with mlflow.start_run(run_name=run_name):
         mlflow.log_params(parameters)
         yield mlflow

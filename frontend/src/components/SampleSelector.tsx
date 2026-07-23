@@ -8,16 +8,16 @@ interface SampleSelectorProps {
 }
 
 export function SampleSelector({ samples, onSelect }: SampleSelectorProps) {
-  const [selectedId, setSelectedId] = useState(samples[0]?.id.toString() ?? "");
+  const [selectedId, setSelectedId] = useState(samples[0]?.dataset_row_id.toString() ?? "");
 
   useEffect(() => {
     if (!selectedId && samples[0]) {
-      setSelectedId(samples[0].id.toString());
+      setSelectedId(samples[0].dataset_row_id.toString());
     }
   }, [samples, selectedId]);
 
   const loadSample = () => {
-    const selected = samples.find((sample) => sample.id.toString() === selectedId);
+    const selected = samples.find((sample) => sample.dataset_row_id.toString() === selectedId);
     if (selected) onSelect(selected);
   };
 
@@ -31,8 +31,8 @@ export function SampleSelector({ samples, onSelect }: SampleSelectorProps) {
           onChange={(event) => setSelectedId(event.target.value)}
         >
           {samples.map((sample) => (
-            <option key={sample.id} value={sample.id}>
-              Sample {sample.id + 1}, known label: {sample.known_label}
+            <option key={sample.dataset_row_id} value={sample.dataset_row_id}>
+              Dataset row {sample.dataset_row_id}, reference label: {sample.known_label}
             </option>
           ))}
         </select>

@@ -5,8 +5,8 @@ export function RocCurveViewer() {
   return (
     <ReportFigure
       src={reportUrl("roc_curve.png")}
-      alt="ROC curves comparing all trained models"
-      caption="All curves use the same held-out test rows."
+      alt="ROC curve for the frozen selected model"
+      caption="The governed regression set is used only for the frozen selected model."
     />
   );
 }

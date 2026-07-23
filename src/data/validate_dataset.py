@@ -3,10 +3,12 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 from src.config import REPORTS_DIR
-from src.data.load_dataset import DatasetBundle, load_dataset_frame
+from src.contracts import EDUCATIONAL_LIMITATION
+from src.data.load_dataset import DatasetBundle, dataset_fingerprint, load_dataset_frame
 
 
 def build_validation_report(bundle: DatasetBundle) -> str:
@@ -14,6 +16,9 @@ def build_validation_report(bundle: DatasetBundle) -> str:
     target_counts = bundle.frame["label"].value_counts()
     missing = bundle.frame.isna().sum()
     duplicate_count = int(bundle.features.duplicated().sum())
+    duplicate_columns = int(bundle.features.columns.duplicated().sum())
+    constant_features = int((bundle.features.nunique(dropna=False) <= 1).sum())
+    non_finite = int((~np.isfinite(bundle.features.to_numpy(dtype=float))).sum())
     imbalance_ratio = float(target_counts.max() / target_counts.min())
     imbalance_summary = (
         "Class imbalance is mild and is handled with stratified splits."
@@ -29,7 +34,11 @@ def build_validation_report(bundle: DatasetBundle) -> str:
         f"- Rows: {len(bundle.frame)}\n"
         f"- Numeric features: {len(bundle.feature_names)}\n"
         f"- Duplicate feature rows: {duplicate_count}\n"
+        f"- Duplicate feature columns: {duplicate_columns}\n"
+        f"- Constant features: {constant_features}\n"
+        f"- Non-finite values: {non_finite}\n"
         f"- Missing values: {int(missing.sum())}\n"
+        f"- Canonical CSV SHA-256: `{dataset_fingerprint(bundle)}`\n"
         f"- Class ratio: {imbalance_ratio:.2f}\n"
         f"- Assessment: {imbalance_summary}\n\n"
         "## Target Distribution\n\n"
@@ -42,8 +51,9 @@ def build_validation_report(bundle: DatasetBundle) -> str:
         f"{ranges.to_markdown(floatfmt='.4f')}\n\n"
         "## Outlier Summary\n\n"
         "Counts use a simple three-standard-deviation screen and are descriptive, "
-        "not grounds for automatic removal.\n\n"
-        f"{outliers.to_frame('count').to_markdown()}\n"
+        "not clinical validity ranges and not grounds for automatic removal.\n\n"
+        f"{outliers.to_frame('count').to_markdown()}\n\n"
+        f"{EDUCATIONAL_LIMITATION}\n"
     )
 
 

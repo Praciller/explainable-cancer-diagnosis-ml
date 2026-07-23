@@ -1,1 +1,1 @@
-"""Explainable cancer diagnosis portfolio package."""
+"""Educational explainable tabular-classification portfolio package."""

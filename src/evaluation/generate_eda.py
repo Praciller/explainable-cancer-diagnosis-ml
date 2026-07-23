@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 from src.config import REPORTS_DIR
+from src.contracts import EDUCATIONAL_LIMITATION
 from src.data.load_dataset import load_dataset_frame
 
 
@@ -59,12 +60,17 @@ def generate_eda(reports_dir: Path = REPORTS_DIR) -> None:
         "## Strongest Relationships\n\n"
         + "\n".join(
             f"- `{name}`: target correlation {value:.3f}"
-            for name, value in target_correlations.abs().sort_values(ascending=False).head(8).items()
+            for name, value in target_correlations.abs()
+            .sort_values(ascending=False)
+            .head(8)
+            .items()
         )
         + "\n\n## Leakage and Overfitting Risks\n\n"
         "Features are measurements from the same digitized image and several are strongly "
-        "correlated. Splitting must happen by row before fitting scalers. The small, clean dataset "
-        "can overstate real-world performance and does not provide external clinical validation.\n"
+        "correlated. Splitting must happen by row before fitting scalers. The small, clean "
+        "dataset can overstate real-world performance and does not provide external "
+        "clinical validation.\n\n"
+        f"{EDUCATIONAL_LIMITATION}\n"
     )
     reports_dir.mkdir(parents=True, exist_ok=True)
     (reports_dir / "eda_summary.md").write_text(summary, encoding="utf-8")

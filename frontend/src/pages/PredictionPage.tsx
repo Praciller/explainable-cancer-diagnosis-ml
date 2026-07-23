@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { ErrorMessage } from "../components/ErrorMessage";
+import { DisclaimerBanner } from "../components/DisclaimerBanner";
 import { FeatureInputForm } from "../components/FeatureInputForm";
 import { PredictionResult } from "../components/PredictionResult";
 import { SampleSelector } from "../components/SampleSelector";
@@ -32,13 +33,15 @@ export function PredictionPage({
         <header className="page-heading">
           <div>
             <span className="section-label">Prediction workspace</span>
-            <h1>Live inference stays local for v1.</h1>
+          <h1>Live inference stays local for v1.</h1>
             <p>
               The hosted frontend presents measured model evidence without deploying the medical
               inference API to a general-purpose frontend platform.
             </p>
           </div>
         </header>
+
+        <DisclaimerBanner />
 
         <section className="deployment-notice">
           <h2>Run the complete sample-based workflow locally</h2>
@@ -73,13 +76,15 @@ export function PredictionPage({
       <header className="page-heading">
         <div>
           <span className="section-label">Prediction workspace</span>
-          <h1>Start with a complete sample.</h1>
+          <h1>Start with a governed dataset row.</h1>
           <p>
-            These inputs are measurements from digitized images, not values intended for manual
-            entry by general users.
+            These are educational dataset records containing measurements from digitized
+            fine-needle aspirate images, not real-time patients or user-entered symptoms.
           </p>
         </div>
       </header>
+
+      <DisclaimerBanner />
 
       <div className="prediction-layout">
         <section className="prediction-input">
@@ -128,7 +133,10 @@ export function PredictionPage({
           ) : (
             <div className="empty-result">
               <strong>No model output yet</strong>
-              <p>Load a sample and run the model to see probabilities and feature contributions.</p>
+              <p>
+                Load a dataset row and run the model to see its malignant-class score and bounded
+                feature contributions.
+              </p>
             </div>
           )}
         </div>

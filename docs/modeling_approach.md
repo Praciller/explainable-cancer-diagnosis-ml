@@ -1,28 +1,21 @@
-# Modeling Approach
+# Modeling approach
 
-## Split
+## Governed split
 
-One deterministic stratified split is reused:
+Seed `42` creates a stratified 398/85/86 train/validation/governed-test split. Row IDs and assignment SHA-256 `497e9350c039abd8f56c26e0fd3d6abf962bb8008fce5379f0b1790a9684df9c` preserve lineage and make overlap checks reproducible.
 
-- 70% training: 398 rows
-- 15% validation: 85 rows
-- 15% test: 86 rows
+Preprocessing is fitted after splitting. Logistic Regression uses `StandardScaler` inside its pipeline. The PyTorch scaler is fitted on training rows only. Tree candidates use raw features. No resampling or feature selection occurs.
 
-The validation set selects the baseline model. The test set reports final comparisons.
+## Candidate protocol
 
-## Models
+- Majority `DummyClassifier` establishes a meaningful floor.
+- Regularized Logistic Regression, Random Forest, and Gradient Boosting are scikit-learn candidates.
+- A compact CPU PyTorch MLP is retained as a challenger.
 
-- Logistic Regression uses `StandardScaler` inside a scikit-learn pipeline.
-- Random Forest uses 300 trees and a minimum leaf size of 2.
-- Gradient Boosting uses scikit-learn defaults with a fixed seed.
-- PyTorch MLP uses 30 inputs, hidden layers of 64 and 32, ReLU, dropout, and one binary logit.
+All candidates use the same train and validation rows, malignant-positive contract, threshold `0.50`, and deterministic seeds where supported. The MLP uses validation loss for checkpoint selection.
 
-The MLP uses Adam, binary cross-entropy, train-only scaling, deterministic loading, and early stopping.
+Candidate selection uses validation ROC-AUC. Exact ties prefer Logistic Regression, then Random Forest, then Gradient Boosting for lower complexity and interpretability. Test results do not choose the model.
 
-## Selection
+The frozen selected model is evaluated once by the pipeline on the governed test rows. Those rows were exposed during earlier portfolio work, so the result is described as a governed regression artifact rather than a pristine scientific holdout.
 
-Baseline selection uses validation ROC-AUC for the malignant class. Logistic Regression and Random Forest both reached 1.0 validation ROC-AUC at seed 42; deterministic insertion order selects Logistic Regression. The test table remains the honest comparison.
-
-## Reproducibility
-
-Every command accepts or uses seed 42. Metadata stores the seed, feature order, target names, training time, and a hash of the loaded dataset.
+Scores are uncalibrated. Threshold trade-off plots use validation labels only.

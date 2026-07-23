@@ -1,19 +1,21 @@
-# Evaluation
+# Evaluation contract
 
-Metrics treat malignant (`0`) as the safety-relevant positive class.
+Malignant (`0`) is the safety-relevant positive class. Metrics are recomputed from `reports/locked_test_predictions.csv`, never averaged from rounded values.
 
-- Accuracy: all correct classifications.
-- Precision: share of malignant predictions that are malignant.
-- Recall and sensitivity: share of malignant rows detected.
-- Specificity: share of benign rows identified as benign.
-- F1: harmonic mean of malignant precision and recall.
-- Macro F1: equal class weighting.
-- ROC-AUC: malignant ranking quality across thresholds.
+- balanced accuracy gives equal weight to malignant and benign recall;
+- malignant precision describes the share of malignant classifications that are malignant rows;
+- malignant recall or sensitivity describes malignant rows classified as malignant;
+- specificity describes benign rows classified as benign;
+- malignant F1 combines malignant precision and recall;
+- ROC-AUC measures malignant-score ranking across thresholds;
+- PR-AUC emphasizes malignant-class retrieval under class imbalance.
 
-All models use the same 86-row held-out test set.
+The selected Logistic Regression uses threshold `0.50` and is uncalibrated. On 86 governed regression rows:
 
-## Result Interpretation
+- matrix `[[31, 1], [0, 54]]`, rows actual and columns model classification in malignant/benign order;
+- 1 malignant-to-benign error and 0 benign-to-malignant errors;
+- sensitivity `0.9688`, specificity `1.0000`;
+- balanced accuracy `0.9844`, malignant F1 `0.9841`;
+- ROC-AUC `0.9954`, PR-AUC `0.9938`.
 
-Logistic Regression achieved 0.9954 ROC-AUC, 0.9688 sensitivity, and 1.0 specificity. It missed one malignant sample. The PyTorch MLP was close in ranking quality at 0.9936 ROC-AUC but made four class errors.
-
-The small test set means individual rows materially affect metrics. Results must not be interpreted as clinical validation.
+The small test set and prior exposure mean each row materially affects the metrics. These values do not encode clinical utility or establish safety.

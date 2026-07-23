@@ -13,6 +13,13 @@ import numpy as np
 import pandas as pd
 
 from src.config import MODELS_DIR, REPORTS_DIR
+from src.contracts import (
+    DECISION_THRESHOLD,
+    EDUCATIONAL_LIMITATION,
+    RAW_TARGET_TO_LABEL,
+    malignant_scores,
+    predictions_from_malignant_scores,
+)
 from src.data.load_dataset import load_dataset_frame
 from src.features.preprocess import split_dataset
 
@@ -25,30 +32,29 @@ def generate_error_analysis(
     model = joblib.load(models_dir / "best_model.joblib")
     bundle = load_dataset_frame()
     splits = split_dataset(bundle.features, bundle.target, int(metadata["random_seed"]))
-    prediction = model.predict(splits.X_test)
-    probabilities = model.predict_proba(splits.X_test)
-    confidence = probabilities.max(axis=1)
-    malignant_probability = probabilities[:, 0]
+    malignant_score = malignant_scores(model.classes_, model.predict_proba(splits.X_test))
+    prediction = predictions_from_malignant_scores(malignant_score)
+    threshold_margin = np.abs(malignant_score - DECISION_THRESHOLD)
 
     analysis = splits.X_test.copy()
     analysis.insert(0, "sample_index", analysis.index)
-    analysis["actual_class"] = splits.y_test.map(dict(enumerate(bundle.target_names)))
+    analysis["actual_class"] = splits.y_test.map(RAW_TARGET_TO_LABEL)
     analysis["predicted_class"] = pd.Series(
         prediction,
         index=analysis.index,
-    ).map(dict(enumerate(bundle.target_names)))
-    analysis["confidence"] = confidence
-    analysis["malignant_probability"] = malignant_probability
+    ).map(RAW_TARGET_TO_LABEL)
+    analysis["malignant_class_score"] = malignant_score
+    analysis["threshold_margin"] = threshold_margin
     analysis["error_type"] = np.select(
         [
             (splits.y_test.to_numpy() == 0) & (prediction == 1),
             (splits.y_test.to_numpy() == 1) & (prediction == 0),
-            confidence < 0.65,
+            threshold_margin < 0.15,
         ],
-        ["false_negative", "false_positive", "low_confidence"],
+        ["false_negative", "false_positive", "near_threshold"],
         default="correct",
     )
-    notable = analysis[analysis["error_type"] != "correct"].sort_values("confidence")
+    notable = analysis[analysis["error_type"] != "correct"].sort_values("threshold_margin")
 
     reports_dir.mkdir(parents=True, exist_ok=True)
     notable.to_csv(reports_dir / "error_analysis.csv", index=False)
@@ -58,31 +64,41 @@ def generate_error_analysis(
         f"Best baseline model: `{metadata['model_name']}`.\n\n"
         f"- False negatives (malignant predicted benign): {int(counts.get('false_negative', 0))}\n"
         f"- False positives (benign predicted malignant): {int(counts.get('false_positive', 0))}\n"
-        f"- Other low-confidence predictions: {int(counts.get('low_confidence', 0))}\n\n"
-        "False negatives are the more concerning error in this educational diagnostic framing. "
-        "Threshold changes trade sensitivity against specificity and cannot establish clinical "
-        "suitability on this small public dataset.\n",
+        f"- Other near-threshold rows: {int(counts.get('near_threshold', 0))}\n\n"
+        "Rows are identified by stable dataset indices. This review does not tune the model "
+        "or threshold after inspecting the governed test set. A few errors do not support "
+        "biological or medical conclusions.\n\n"
+        f"{EDUCATIONAL_LIMITATION}\n",
         encoding="utf-8",
     )
 
     thresholds = np.linspace(0.05, 0.95, 37)
     sensitivity: list[float] = []
     specificity: list[float] = []
-    y_true = splits.y_test.to_numpy()
+    validation_score = malignant_scores(
+        model.classes_,
+        model.predict_proba(splits.X_validation),
+    )
+    y_true = splits.y_validation.to_numpy()
     for threshold in thresholds:
-        malignant_prediction = malignant_probability >= threshold
+        malignant_prediction = validation_score >= threshold
         sensitivity.append(float(malignant_prediction[y_true == 0].mean()))
         specificity.append(float((~malignant_prediction[y_true == 1]).mean()))
 
     figure, axis = plt.subplots(figsize=(7, 5))
     axis.plot(thresholds, sensitivity, label="Sensitivity", color="#d36d5f")
     axis.plot(thresholds, specificity, label="Specificity", color="#6c9b76")
-    axis.axvline(0.5, linestyle=":", color="#713c78", label="Default threshold")
+    axis.axvline(
+        DECISION_THRESHOLD,
+        linestyle=":",
+        color="#713c78",
+        label="Fixed default threshold",
+    )
     axis.set(
-        xlabel="Malignant probability threshold",
+        xlabel="Malignant-class score threshold",
         ylabel="Rate",
         ylim=(0, 1.02),
-        title="Threshold trade-off analysis",
+        title="Validation-only threshold trade-off",
     )
     axis.legend(frameon=False)
     axis.grid(alpha=0.2)

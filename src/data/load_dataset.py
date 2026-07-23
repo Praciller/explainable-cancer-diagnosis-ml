@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 from dataclasses import dataclass
 from pathlib import Path
 
 import pandas as pd
+import sklearn
 from sklearn.datasets import load_breast_cancer
 
 from src.config import (
@@ -12,6 +14,12 @@ from src.config import (
     RAW_DATA_PATH,
     REPORTS_DIR,
     SAMPLE_DATA_PATH,
+)
+from src.contracts import (
+    EDUCATIONAL_LIMITATION,
+    LABEL_TO_RAW_TARGET,
+    RAW_TARGET_TO_LABEL,
+    label_contract,
 )
 
 
@@ -47,21 +55,44 @@ def load_dataset_frame() -> DatasetBundle:
     )
 
 
+def dataset_fingerprint(bundle: DatasetBundle | None = None) -> str:
+    resolved = bundle or load_dataset_frame()
+    canonical_csv = resolved.frame.to_csv(index=False, lineterminator="\n")
+    return hashlib.sha256(canonical_csv.encode("utf-8")).hexdigest()
+
+
 def _metadata_markdown(bundle: DatasetBundle) -> str:
     feature_lines = "\n".join(f"- `{name}`" for name in bundle.feature_names)
+    class_counts = bundle.target.value_counts().sort_index()
+    fingerprint = dataset_fingerprint(bundle)
     return (
         "# Dataset Metadata\n\n"
         "## Source\n\n"
-        "`sklearn.datasets.load_breast_cancer(as_frame=True)`\n\n"
+        "`sklearn.datasets.load_breast_cancer(as_frame=True)` using the Breast Cancer "
+        "Wisconsin (Diagnostic) dataset. The source measurements were computed from "
+        "digitized images of fine-needle aspirate samples. The bundled scikit-learn "
+        "description attributes the data to Wolberg, Street, and Mangasarian and the "
+        "University of Wisconsin.\n\n"
+        f"- scikit-learn version: `{sklearn.__version__}`\n"
+        f"- Canonical CSV SHA-256: `{fingerprint}`\n"
+        "- Physical units: not specified by the bundled dataset documentation\n\n"
         "## Shape\n\n"
         f"- Rows: {len(bundle.frame)}\n"
         f"- Numeric features: {len(bundle.feature_names)}\n"
         f"- Saved columns: {bundle.frame.shape[1]}\n\n"
         "## Target Mapping\n\n"
         f"- `0`: {bundle.target_names[0]}\n"
-        f"- `1`: {bundle.target_names[1]}\n\n"
+        f"- `1`: {bundle.target_names[1]}\n"
+        f"- Malignant rows: {int(class_counts[LABEL_TO_RAW_TARGET['malignant']])}\n"
+        f"- Benign rows: {int(class_counts[LABEL_TO_RAW_TARGET['benign']])}\n"
+        f"- Safety-relevant positive class: `{RAW_TARGET_TO_LABEL[0]}` (`0`)\n"
+        f"- Shared contract: `{label_contract()}`\n\n"
         "## Features\n\n"
-        f"{feature_lines}\n"
+        f"{feature_lines}\n\n"
+        "Each row is an educational dataset record, not a current patient or a "
+        "general-user symptom questionnaire. The dataset is small, clean, and not "
+        "clinically representative.\n\n"
+        f"{EDUCATIONAL_LIMITATION}\n"
     )
 
 

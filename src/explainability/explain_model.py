@@ -16,6 +16,7 @@ import shap
 from sklearn.pipeline import Pipeline
 
 from src.config import MODELS_DIR, REPORTS_DIR
+from src.contracts import EDUCATIONAL_LIMITATION, SAFETY_POSITIVE_RAW_TARGET
 from src.data.load_dataset import load_dataset_frame
 from src.features.preprocess import split_dataset
 from src.utils.importance import model_feature_importance
@@ -25,6 +26,7 @@ def _shap_values(
     model: Any,
     background: pd.DataFrame,
     samples: pd.DataFrame,
+    explained_raw_target: int = SAFETY_POSITIVE_RAW_TARGET,
 ) -> tuple[np.ndarray, np.ndarray, float]:
     if isinstance(model, Pipeline):
         scaler = model.named_steps["scaler"]
@@ -34,16 +36,29 @@ def _shap_values(
         explainer = shap.LinearExplainer(classifier, background_values)
         values = np.asarray(explainer.shap_values(sample_values))
         expected = float(np.asarray(explainer.expected_value).reshape(-1)[0])
+        classes = np.asarray(classifier.classes_)
+        target_index = int(np.flatnonzero(classes == explained_raw_target)[0])
+        if len(classes) == 2 and target_index == 0:
+            values = -values
+            expected = -expected
+        elif len(classes) != 2 or target_index != 1:
+            raise ValueError("Unsupported linear SHAP class orientation.")
         return values, sample_values, expected
 
     explainer = shap.TreeExplainer(model)
     values = np.asarray(explainer.shap_values(samples))
     expected_values = np.asarray(explainer.expected_value).reshape(-1)
     if values.ndim == 3:
-        values = values[:, :, 0]
-        expected = float(expected_values[0])
+        target_index = int(np.flatnonzero(np.asarray(model.classes_) == explained_raw_target)[0])
+        values = values[:, :, target_index]
+        expected = float(expected_values[target_index])
     else:
+        classes = np.asarray(model.classes_)
+        target_index = int(np.flatnonzero(classes == explained_raw_target)[0])
         expected = float(expected_values[0])
+        if len(classes) == 2 and target_index == 0:
+            values = -values
+            expected = -expected
     return values, samples.to_numpy(), expected
 
 
@@ -63,7 +78,7 @@ def explain_best_model(
     top = importance.head(12).sort_values()
     figure, axis = plt.subplots(figsize=(8, 6))
     axis.barh(top.index, top.values, color="#713c78")
-    axis.set(title="Global feature importance", xlabel="Model importance")
+    axis.set(title="Global feature importance", xlabel="Absolute model importance")
     figure.tight_layout()
     figure.savefig(figures_dir / "feature_importance.png", dpi=160)
     plt.close(figure)
@@ -80,6 +95,7 @@ def explain_best_model(
         rng=np.random.default_rng(42),
     )
     plt.gcf().tight_layout()
+    plt.gca().set_xlabel("SHAP value for malignant-class log-odds")
     plt.gcf().savefig(figures_dir / "shap_summary.png", dpi=160, bbox_inches="tight")
     plt.close(plt.gcf())
 
@@ -90,6 +106,10 @@ def explain_best_model(
         feature_names=bundle.feature_names,
     )
     shap.plots.waterfall(explanation, max_display=12, show=False)
+    plt.gcf().suptitle(
+        f"Malignant-class explanation for dataset row {int(samples.index[0])}",
+        y=1.01,
+    )
     plt.gcf().tight_layout()
     plt.gcf().savefig(
         figures_dir / "shap_example_prediction.png",
@@ -104,9 +124,13 @@ def explain_best_model(
         f"The selected baseline model is `{metadata['model_name']}`. Its strongest global "
         "importance signals are:\n\n"
         + "\n".join(f"- `{name}`: {value:.4f}" for name, value in importance.head(10).items())
-        + "\n\nSHAP values describe how this model's inputs move its output relative to a "
-        "background expectation. They do not establish causality, biological mechanism, or "
-        "clinical relevance. Correlated measurements can divide or redistribute importance.\n",
+        + "\n\nThe SHAP output class is explicitly `malignant` (`raw target 0`). "
+        f"The local waterfall uses dataset row `{int(samples.index[0])}` and reconstructs "
+        "the malignant-class log-odds relative to the training-background expectation.\n\n"
+        "These explanations describe how the model used the supplied measurements. "
+        "They do not prove biological causality, medical importance, or why cancer develops. "
+        "Correlated measurements can divide or redistribute importance.\n\n"
+        f"{EDUCATIONAL_LIMITATION}\n",
         encoding="utf-8",
     )
 

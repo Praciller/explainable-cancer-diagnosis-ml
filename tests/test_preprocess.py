@@ -28,3 +28,18 @@ def test_standard_scaler_is_fit_on_training_data_only() -> None:
     assert np.allclose(scaled.scaler.mean_, splits.X_train.mean(axis=0))
     assert scaled.X_validation.shape == splits.X_validation.shape
     assert scaled.X_test.shape == splits.X_test.shape
+
+
+def test_split_manifest_locks_assignment_identity() -> None:
+    from src.data.load_dataset import load_dataset_frame
+    from src.features.preprocess import split_dataset, split_manifest
+
+    bundle = load_dataset_frame()
+    manifest = split_manifest(
+        split_dataset(bundle.features, bundle.target, seed=42),
+        seed=42,
+    )
+
+    assert manifest["row_counts"] == {"train": 398, "validation": 85, "locked_test": 86}
+    assert len(set(manifest["row_ids"]["train"]) & set(manifest["row_ids"]["locked_test"])) == 0
+    assert len(manifest["assignment_sha256"]) == 64

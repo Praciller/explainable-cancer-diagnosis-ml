@@ -11,61 +11,87 @@ interface OverviewPageProps {
 }
 
 export function OverviewPage({ modelInfo, evaluation, onStart }: OverviewPageProps) {
-  const best = evaluation?.models[evaluation.best_test_model];
+  const locked = evaluation?.locked_test.metrics;
 
   return (
     <div className="page">
       <header className="page-heading overview-heading">
         <div>
-          <span className="section-label">Explainable tabular ML</span>
-          <h1>Evidence before confidence.</h1>
+          <span className="section-label">Governed educational tabular ML</span>
+          <h1>Evidence with an explicit boundary.</h1>
           <p>
-            Compare four classification approaches, inspect held-out performance, and trace what
-            shaped each model output.
+            Compare validation evidence, inspect malignant-case errors on a governed regression
+            set, and trace the selected model without claiming clinical meaning.
           </p>
         </div>
         <button className="button button-primary" type="button" onClick={onStart}>
-          Explore a prediction <ArrowRight aria-hidden="true" size={18} />
+          Review the workflow <ArrowRight aria-hidden="true" size={18} />
         </button>
       </header>
 
       <DisclaimerBanner />
 
-      <section className="metric-row" aria-label="Project summary">
-        <MetricCard label="Dataset" value="569" detail="Rows, 30 numeric features" />
-        <MetricCard label="Selected model" value={modelInfo.model_name} detail="Validation ROC-AUC" />
+      <section className="metric-row" aria-label="Governance summary">
+        <MetricCard label="Dataset" value="569 × 30" detail="WDBC rows and image measurements" />
+        <MetricCard label="Split" value="398 / 85 / 86" detail="Train / validation / governed test" />
+        <MetricCard label="Positive class" value="Malignant" detail="Raw target 0, explicit contract" />
         <MetricCard
-          label="Test ROC-AUC"
-          value={best ? best.roc_auc.toFixed(3) : "Run evaluation"}
-          detail="Shared held-out test set"
+          label="Score status"
+          value={modelInfo.calibration_status}
+          detail={`Fixed threshold ${modelInfo.decision_threshold.toFixed(2)}`}
         />
+      </section>
+
+      <section className="evidence-summary" aria-label="Selected-model evidence">
+        <div>
+          <span className="section-label">Selected on validation</span>
+          <h2>{modelInfo.model_name}</h2>
+          <p>
+            Selection metric: validation ROC-AUC. The 86-row test artifact has been exposed during
+            portfolio development and is retained as a governed regression set.
+          </p>
+        </div>
+        <dl>
+          <div>
+            <dt>Governed-test ROC-AUC</dt>
+            <dd>{locked ? locked.roc_auc.toFixed(3) : "Unavailable"}</dd>
+          </div>
+          <div>
+            <dt>Malignant-to-benign errors</dt>
+            <dd>{locked?.false_negative_count ?? "Unavailable"}</dd>
+          </div>
+          <div>
+            <dt>Benign-to-malignant errors</dt>
+            <dd>{locked?.false_positive_count ?? "Unavailable"}</dd>
+          </div>
+        </dl>
       </section>
 
       <section className="workflow">
         <div className="section-heading">
           <span className="section-label">Review path</span>
-          <h2>From offline dataset to explainable API</h2>
+          <h2>From packaged data to validated artifacts</h2>
         </div>
         <ol>
           <li>
             <Database aria-hidden="true" />
             <div>
-              <strong>Validate the dataset</strong>
-              <p>Verify class mapping, ranges, missing values, duplicates, and imbalance.</p>
+              <strong>Validate the dataset contract</strong>
+              <p>Fingerprint 569 rows, 30 ordered features, target mapping, and split lineage.</p>
             </div>
           </li>
           <li>
             <GitCompareArrows aria-hidden="true" />
             <div>
-              <strong>Compare model families</strong>
-              <p>Use one stratified split for linear, ensemble, boosting, and neural models.</p>
+              <strong>Select on validation only</strong>
+              <p>Compare a majority baseline and four candidates without test-set selection.</p>
             </div>
           </li>
           <li>
             <ScanSearch aria-hidden="true" />
             <div>
-              <strong>Inspect model behavior</strong>
-              <p>Review global importance, SHAP values, errors, and threshold trade-offs.</p>
+              <strong>Verify model behavior</strong>
+              <p>Check malignant-oriented scores, SHAP signs, errors, and artifact checksums.</p>
             </div>
           </li>
         </ol>

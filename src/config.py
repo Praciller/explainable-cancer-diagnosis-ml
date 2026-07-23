@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from src.contracts import EDUCATIONAL_LIMITATION
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = PROJECT_ROOT / "data"
 RAW_DATA_PATH = DATA_DIR / "raw" / "breast_cancer_raw.csv"
@@ -9,9 +11,6 @@ MODELS_DIR = PROJECT_ROOT / "models"
 REPORTS_DIR = PROJECT_ROOT / "reports"
 FIGURES_DIR = REPORTS_DIR / "figures"
 
-DISCLAIMER = (
-    "This system is a machine learning portfolio demo and is not intended for "
-    "medical diagnosis or clinical decision-making."
-)
-API_DISCLAIMER = "This is a portfolio ML demo and not medical advice."
+DISCLAIMER = EDUCATIONAL_LIMITATION
+API_DISCLAIMER = EDUCATIONAL_LIMITATION
 RANDOM_SEED = 42

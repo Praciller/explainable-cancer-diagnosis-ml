@@ -13,4 +13,8 @@ The selected baseline model is `logistic_regression`. Its strongest global impor
 - `worst smoothness`: 0.7490
 - `worst perimeter`: 0.7310
 
-SHAP values describe how this model's inputs move its output relative to a background expectation. They do not establish causality, biological mechanism, or clinical relevance. Correlated measurements can divide or redistribute importance.
+The SHAP output class is explicitly `malignant` (`raw target 0`). The local waterfall uses dataset row `102` and reconstructs the malignant-class log-odds relative to the training-background expectation.
+
+These explanations describe how the model used the supplied measurements. They do not prove biological causality, medical importance, or why cancer develops. Correlated measurements can divide or redistribute importance.
+
+This project is an educational machine-learning portfolio demonstration. It is not intended for diagnosis, screening, treatment, medical advice, or clinical decision-making.
