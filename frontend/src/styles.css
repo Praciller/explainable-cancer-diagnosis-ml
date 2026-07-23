@@ -161,6 +161,10 @@ main {
   gap: 48px;
 }
 
+.page > * {
+  min-width: 0;
+}
+
 .page-heading {
   display: flex;
   align-items: end;
