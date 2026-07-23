@@ -6,8 +6,8 @@ import type { SampleRecord } from "../types/api";
 import { SampleSelector } from "./SampleSelector";
 
 const samples: SampleRecord[] = [
-  { id: 0, known_label: "malignant", features: { "mean radius": 17.99 } },
-  { id: 1, known_label: "benign", features: { "mean radius": 12.45 } },
+  { dataset_row_id: 0, known_label: "malignant", features: { "mean radius": 17.99 } },
+  { dataset_row_id: 1, known_label: "benign", features: { "mean radius": 12.45 } },
 ];
 
 test("loads a selected complete sample into the prediction workflow", async () => {

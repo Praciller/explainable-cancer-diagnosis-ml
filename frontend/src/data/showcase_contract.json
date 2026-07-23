@@ -1,0 +1,226 @@
+{
+  "schema_version": 1,
+  "model_info": {
+    "model_name": "logistic_regression",
+    "problem_type": "binary_classification",
+    "features": 30,
+    "classes": [
+      "malignant",
+      "benign"
+    ],
+    "dataset_fingerprint": "f721302d723688b8cce20f5f9b5c1bfcd654703234c137b9df575fca7fe7e218",
+    "model_version": "bbb5977c47501cd9a962",
+    "positive_class": "malignant",
+    "decision_threshold": 0.5,
+    "calibration_status": "uncalibrated",
+    "educational_limitation": "This project is an educational machine-learning portfolio demonstration. It is not intended for diagnosis, screening, treatment, medical advice, or clinical decision-making."
+  },
+  "dataset": {
+    "loader": "sklearn.datasets.load_breast_cancer(as_frame=True)",
+    "fingerprint_sha256": "f721302d723688b8cce20f5f9b5c1bfcd654703234c137b9df575fca7fe7e218",
+    "rows": 569,
+    "features": 30,
+    "class_counts": {
+      "0": 212,
+      "1": 357
+    },
+    "scikit_learn_version": "1.6.1"
+  },
+  "evaluation": {
+    "selected_model": "logistic_regression",
+    "selection": {
+      "metric": "validation_roc_auc",
+      "value": 1.0
+    },
+    "split": {
+      "seed": 42,
+      "row_counts": {
+        "train": 398,
+        "validation": 85,
+        "locked_test": 86
+      },
+      "assignment_sha256": "497e9350c039abd8f56c26e0fd3d6abf962bb8008fce5379f0b1790a9684df9c"
+    },
+    "threshold": {
+      "value": 0.5,
+      "source": "fixed default before governed test evaluation"
+    },
+    "calibration_status": "uncalibrated",
+    "validation_models": {
+      "dummy_majority": {
+        "sample_count": 85,
+        "threshold": 0.5,
+        "accuracy": 0.6235294117647059,
+        "balanced_accuracy": 0.5,
+        "malignant_precision": 0.0,
+        "malignant_recall": 0.0,
+        "malignant_f1": 0.0,
+        "macro_f1": 0.38405797101449274,
+        "roc_auc": 0.5,
+        "pr_auc": 0.3764705882352941,
+        "sensitivity": 0.0,
+        "specificity": 1.0,
+        "true_malignant_count": 0,
+        "false_negative_count": 32,
+        "false_positive_count": 0,
+        "true_benign_count": 53,
+        "confusion_matrix": [
+          [
+            0,
+            32
+          ],
+          [
+            0,
+            53
+          ]
+        ]
+      },
+      "logistic_regression": {
+        "sample_count": 85,
+        "threshold": 0.5,
+        "accuracy": 0.9882352941176471,
+        "balanced_accuracy": 0.9905660377358491,
+        "malignant_precision": 0.9696969696969697,
+        "malignant_recall": 1.0,
+        "malignant_f1": 0.9846153846153847,
+        "macro_f1": 0.9875457875457876,
+        "roc_auc": 1.0,
+        "pr_auc": 1.0,
+        "sensitivity": 1.0,
+        "specificity": 0.9811320754716981,
+        "true_malignant_count": 32,
+        "false_negative_count": 0,
+        "false_positive_count": 1,
+        "true_benign_count": 52,
+        "confusion_matrix": [
+          [
+            32,
+            0
+          ],
+          [
+            1,
+            52
+          ]
+        ]
+      },
+      "random_forest": {
+        "sample_count": 85,
+        "threshold": 0.5,
+        "accuracy": 0.9882352941176471,
+        "balanced_accuracy": 0.9905660377358491,
+        "malignant_precision": 0.9696969696969697,
+        "malignant_recall": 1.0,
+        "malignant_f1": 0.9846153846153847,
+        "macro_f1": 0.9875457875457876,
+        "roc_auc": 1.0,
+        "pr_auc": 1.0,
+        "sensitivity": 1.0,
+        "specificity": 0.9811320754716981,
+        "true_malignant_count": 32,
+        "false_negative_count": 0,
+        "false_positive_count": 1,
+        "true_benign_count": 52,
+        "confusion_matrix": [
+          [
+            32,
+            0
+          ],
+          [
+            1,
+            52
+          ]
+        ]
+      },
+      "gradient_boosting": {
+        "sample_count": 85,
+        "threshold": 0.5,
+        "accuracy": 0.9764705882352941,
+        "balanced_accuracy": 0.9749410377358491,
+        "malignant_precision": 0.96875,
+        "malignant_recall": 0.96875,
+        "malignant_f1": 0.96875,
+        "macro_f1": 0.9749410377358491,
+        "roc_auc": 0.9994103773584906,
+        "pr_auc": 0.9990530303030303,
+        "sensitivity": 0.96875,
+        "specificity": 0.9811320754716981,
+        "true_malignant_count": 31,
+        "false_negative_count": 1,
+        "false_positive_count": 1,
+        "true_benign_count": 52,
+        "confusion_matrix": [
+          [
+            31,
+            1
+          ],
+          [
+            1,
+            52
+          ]
+        ]
+      },
+      "pytorch_mlp": {
+        "sample_count": 85,
+        "threshold": 0.5,
+        "accuracy": 0.9764705882352941,
+        "balanced_accuracy": 0.9811320754716981,
+        "malignant_precision": 0.9411764705882353,
+        "malignant_recall": 1.0,
+        "malignant_f1": 0.9696969696969697,
+        "macro_f1": 0.9752331002331003,
+        "roc_auc": 1.0,
+        "pr_auc": 1.0,
+        "sensitivity": 1.0,
+        "specificity": 0.9622641509433962,
+        "true_malignant_count": 32,
+        "false_negative_count": 0,
+        "false_positive_count": 2,
+        "true_benign_count": 51,
+        "confusion_matrix": [
+          [
+            32,
+            0
+          ],
+          [
+            2,
+            51
+          ]
+        ],
+        "epochs_trained": 43,
+        "best_validation_loss": 0.04477182471412508
+      }
+    },
+    "locked_test": {
+      "status": "governed_portfolio_regression_set_previously_exposed",
+      "evaluated_at": "2026-07-23T15:53:28.642291+00:00",
+      "metrics": {
+        "sample_count": 86,
+        "threshold": 0.5,
+        "accuracy": 0.9883720930232558,
+        "balanced_accuracy": 0.984375,
+        "malignant_precision": 1.0,
+        "malignant_recall": 0.96875,
+        "malignant_f1": 0.9841269841269841,
+        "macro_f1": 0.9874763361001893,
+        "roc_auc": 0.9953703703703703,
+        "pr_auc": 0.99375,
+        "sensitivity": 0.96875,
+        "specificity": 1.0,
+        "true_malignant_count": 31,
+        "false_negative_count": 1,
+        "false_positive_count": 0,
+        "true_benign_count": 54,
+        "confusion_matrix": [
+          [
+            31,
+            1
+          ],
+          [
+            0,
+            54
+          ]
+        ]
+      }
+    }
+  }
+}

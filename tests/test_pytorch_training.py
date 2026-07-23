@@ -24,5 +24,6 @@ def test_train_pytorch_mlp_saves_reloadable_cpu_checkpoint(tmp_path: Path) -> No
     metrics = json.loads(
         (tmp_path / "reports" / "pytorch_mlp_metrics.json").read_text(encoding="utf-8")
     )
-    assert 0 <= metrics["test"]["roc_auc"] <= 1
+    assert 0 <= metrics["validation"]["roc_auc"] <= 1
+    assert "test" not in metrics
     assert (tmp_path / "reports" / "figures" / "training_curve.png").exists()

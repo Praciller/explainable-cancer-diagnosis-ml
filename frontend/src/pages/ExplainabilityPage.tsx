@@ -10,8 +10,8 @@ export function ExplainabilityPage() {
           <span className="section-label">Model interpretation</span>
           <h1>Explain behavior without claiming causality.</h1>
           <p>
-            Global importance summarizes recurring signals. SHAP shows how feature values move
-            individual outputs relative to a background expectation.
+            Global importance summarizes recurring signals. SHAP values reconstruct the selected
+            model's malignant-class log-odds relative to a training-background expectation.
           </p>
         </div>
       </header>
@@ -20,7 +20,8 @@ export function ExplainabilityPage() {
         <h2>Read these charts carefully</h2>
         <p>
           Correlated measurements can share or redistribute importance. These explanations
-          describe the trained model, not biological mechanisms or clinical relevance.
+          describe how the model used supplied measurements. They do not prove biological
+          causality, medical importance, or why cancer develops.
         </p>
       </section>
 
@@ -28,18 +29,18 @@ export function ExplainabilityPage() {
         <FeatureImportanceChart />
         <ReportFigure
           src={reportUrl("shap_summary.png")}
-          alt="SHAP summary plot across held-out samples"
-          caption="Feature impact magnitude and direction across multiple outputs."
+          alt="SHAP summary plot for malignant-class log-odds across governed test rows"
+          caption="Positive SHAP values move the model toward its malignant-class output."
         />
         <ReportFigure
           src={reportUrl("shap_example_prediction.png")}
-          alt="SHAP waterfall for one example prediction"
-          caption="One local explanation relative to the model background."
+          alt="Malignant-class SHAP waterfall for one educational dataset row"
+          caption="Dataset row 102, reconstructed relative to the training background."
         />
         <ReportFigure
           src={reportUrl("threshold_analysis.png")}
-          alt="Sensitivity and specificity across decision thresholds"
-          caption="Threshold choice changes the model's error trade-off."
+          alt="Validation sensitivity and specificity across model-score thresholds"
+          caption="A validation-only trade-off view, not a clinical threshold recommendation."
         />
       </section>
     </div>

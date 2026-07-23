@@ -5,10 +5,11 @@ export function DisclaimerBanner() {
     <aside className="disclaimer" aria-label="Medical disclaimer">
       <ShieldAlert aria-hidden="true" size={20} />
       <div>
-        <strong>Model output, not medical advice</strong>
+        <strong>Educational model evidence only</strong>
         <p>
-          This system is a machine learning portfolio demo and is not intended for medical
-          diagnosis or clinical decision-making.
+          This project is an educational machine-learning portfolio demonstration. It is not
+          intended for diagnosis, screening, treatment, medical advice, or clinical
+          decision-making.
         </p>
       </div>
     </aside>

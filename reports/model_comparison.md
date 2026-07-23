@@ -1,8 +1,28 @@
-# Model Comparison
+# Governed Model Evaluation
 
-| Model | Accuracy | Precision | Recall | F1 | Macro F1 | ROC-AUC | Sensitivity | Specificity |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| logistic_regression | 0.9884 | 1.0000 | 0.9688 | 0.9841 | 0.9875 | 0.9954 | 0.9688 | 1.0000 |
-| random_forest | 0.8953 | 0.8966 | 0.8125 | 0.8525 | 0.8857 | 0.9797 | 0.8125 | 0.9444 |
-| gradient_boosting | 0.9186 | 0.9310 | 0.8438 | 0.8852 | 0.9111 | 0.9757 | 0.8438 | 0.9630 |
-| pytorch_mlp | 0.9535 | 0.9375 | 0.9375 | 0.9375 | 0.9502 | 0.9936 | 0.9375 | 0.9630 |
+## Validation-only candidate comparison
+
+| Model | ROC-AUC | PR-AUC | Balanced accuracy | Sensitivity | Specificity |
+|---|---:|---:|---:|---:|---:|
+| dummy_majority | 0.5000 | 0.3765 | 0.5000 | 0.0000 | 1.0000 |
+| logistic_regression (selected) | 1.0000 | 1.0000 | 0.9906 | 1.0000 | 0.9811 |
+| random_forest | 1.0000 | 1.0000 | 0.9906 | 1.0000 | 0.9811 |
+| gradient_boosting | 0.9994 | 0.9991 | 0.9749 | 0.9688 | 0.9811 |
+| pytorch_mlp | 1.0000 | 1.0000 | 0.9811 | 1.0000 | 0.9623 |
+
+## Governed test result
+
+- Selected model: `logistic_regression`
+- Selection metric: `validation_roc_auc`
+- Fixed threshold: `0.5`
+- Calibration status: `uncalibrated`
+- Sample count: 86
+- Confusion matrix order: malignant, benign; values: `[[31, 1], [0, 54]]`
+- Malignant-to-benign errors: 1
+- Benign-to-malignant errors: 0
+- ROC-AUC: 0.9954
+- PR-AUC: 0.9938
+
+This 86-row test artifact has been exposed during prior portfolio development. It is retained as a governed regression set, not represented as a pristine scientific benchmark.
+
+This project is an educational machine-learning portfolio demonstration. It is not intended for diagnosis, screening, treatment, medical advice, or clinical decision-making.

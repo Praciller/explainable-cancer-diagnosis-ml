@@ -6,6 +6,8 @@ test("shows the complete medical safety disclaimer", () => {
   render(<DisclaimerBanner />);
 
   expect(
-    screen.getByText(/not intended for medical diagnosis or clinical decision-making/i),
+    screen.getByText(
+      /not intended for diagnosis, screening, treatment, medical advice, or clinical decision-making/i,
+    ),
   ).toBeVisible();
 });

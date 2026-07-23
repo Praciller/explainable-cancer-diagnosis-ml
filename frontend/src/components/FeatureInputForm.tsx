@@ -31,15 +31,14 @@ export function FeatureInputForm({
             <input
               id={`feature-${feature.name}`}
               type="number"
-              min={feature.minimum}
-              max={feature.maximum}
               step="any"
               required
               value={values[feature.name] ?? feature.mean}
               onChange={(event) => onChange(feature.name, Number(event.target.value))}
             />
             <small>
-              Observed {feature.minimum.toFixed(2)} to {feature.maximum.toFixed(2)}
+              Observed dataset range {feature.minimum.toFixed(2)} to{" "}
+              {feature.maximum.toFixed(2)}. Values outside this range produce a warning.
             </small>
           </div>
         ))}

@@ -16,3 +16,5 @@ The dataset contains 569 samples and 30 numeric features. Benign samples are mor
 ## Leakage and Overfitting Risks
 
 Features are measurements from the same digitized image and several are strongly correlated. Splitting must happen by row before fitting scalers. The small, clean dataset can overstate real-world performance and does not provide external clinical validation.
+
+This project is an educational machine-learning portfolio demonstration. It is not intended for diagnosis, screening, treatment, medical advice, or clinical decision-making.

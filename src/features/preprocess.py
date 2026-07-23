@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -32,6 +33,23 @@ class ScaledSplits:
     y_test: np.ndarray
     scaler: StandardScaler
     feature_names: list[str]
+
+
+def split_manifest(splits: DatasetSplits, seed: int) -> dict[str, object]:
+    assignments = {
+        "train": sorted(int(index) for index in splits.X_train.index),
+        "validation": sorted(int(index) for index in splits.X_validation.index),
+        "locked_test": sorted(int(index) for index in splits.X_test.index),
+    }
+    assignment_text = "|".join(
+        f"{name}:{','.join(map(str, indices))}" for name, indices in assignments.items()
+    )
+    return {
+        "seed": seed,
+        "row_counts": {name: len(indices) for name, indices in assignments.items()},
+        "row_ids": assignments,
+        "assignment_sha256": hashlib.sha256(assignment_text.encode("utf-8")).hexdigest(),
+    }
 
 
 def split_dataset(

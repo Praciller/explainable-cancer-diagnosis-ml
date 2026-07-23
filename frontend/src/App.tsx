@@ -89,7 +89,7 @@ export default function App() {
           <Microscope aria-hidden="true" />
           <div>
             <strong>Model Evidence Lab</strong>
-            <span>Breast cancer WDBC</span>
+            <span>WDBC educational dataset</span>
           </div>
         </div>
         <nav aria-label="Primary">
@@ -109,14 +109,17 @@ export default function App() {
             );
           })}
         </nav>
-        <p className="sidebar-note">Educational portfolio system. Not for clinical use.</p>
+        <p className="sidebar-note">
+          Educational classification demo. Not for diagnosis, screening, treatment, advice, or
+          clinical decisions.
+        </p>
       </aside>
 
       <main id="main-content" tabIndex={-1}>
         {HOSTED_SHOWCASE ? (
           <div className="deployment-banner" role="status">
             <strong>Frontend showcase</strong>
-            <span>Live inference remains local via Docker Compose for v1.</span>
+            <span>Read-only evidence. Live dataset-row inference remains local.</span>
           </div>
         ) : null}
         {error ? <ErrorMessage message={error} /> : null}

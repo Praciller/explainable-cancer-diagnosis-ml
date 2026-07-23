@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -11,150 +12,215 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.metrics import (
-    ConfusionMatrixDisplay,
-    PrecisionRecallDisplay,
-    RocCurveDisplay,
-)
+import pandas as pd
+from sklearn.metrics import ConfusionMatrixDisplay, PrecisionRecallDisplay, RocCurveDisplay
 
 from src.config import MODELS_DIR, REPORTS_DIR
-from src.data.load_dataset import load_dataset_frame
-from src.features.preprocess import prepare_scaled_splits, split_dataset
-from src.models.train_pytorch_mlp import load_mlp_checkpoint
+from src.contracts import (
+    CALIBRATION_STATUS,
+    DECISION_THRESHOLD,
+    EDUCATIONAL_LIMITATION,
+    malignant_scores,
+    predictions_from_malignant_scores,
+)
+from src.data.load_dataset import dataset_fingerprint, load_dataset_frame
+from src.features.preprocess import split_dataset, split_manifest
 from src.utils.metrics import classification_metrics
 
 
-def _load_seed(models_dir: Path) -> int:
+def _load_training_contract(
+    models_dir: Path,
+    reports_dir: Path,
+) -> tuple[dict[str, Any], dict[str, Any]]:
     metadata_path = models_dir / "model_metadata.json"
-    if not metadata_path.exists():
-        return 42
-    return int(json.loads(metadata_path.read_text(encoding="utf-8"))["random_seed"])
-
-
-def _pytorch_predictions(
-    checkpoint_path: Path,
-    raw_features: np.ndarray,
-) -> tuple[np.ndarray, np.ndarray]:
-    import torch
-
-    model, checkpoint = load_mlp_checkpoint(checkpoint_path)
-    mean = np.asarray(checkpoint["scaler_mean"])
-    scale = np.asarray(checkpoint["scaler_scale"])
-    scaled = (raw_features - mean) / scale
-    with torch.inference_mode():
-        benign = torch.sigmoid(
-            model(torch.tensor(scaled, dtype=torch.float32))
-        ).numpy()
-    return (benign >= 0.5).astype(int), 1 - benign
-
-
-def _comparison_markdown(metrics: dict[str, dict[str, Any]]) -> str:
-    lines = [
-        "# Model Comparison",
-        "",
-        "| Model | Accuracy | Precision | Recall | F1 | Macro F1 | ROC-AUC | Sensitivity | Specificity |",
-        "|---|---:|---:|---:|---:|---:|---:|---:|---:|",
-    ]
-    for name, values in metrics.items():
-        lines.append(
-            f"| {name} | {values['accuracy']:.4f} | {values['precision']:.4f} | "
-            f"{values['recall']:.4f} | {values['f1']:.4f} | "
-            f"{values['macro_f1']:.4f} | {values['roc_auc']:.4f} | "
-            f"{values['sensitivity']:.4f} | {values['specificity']:.4f} |"
+    baseline_path = reports_dir / "baseline_metrics.json"
+    if not metadata_path.exists() or not baseline_path.exists():
+        raise FileNotFoundError(
+            "Training metadata is missing. Run the baseline training command first."
         )
-    return "\n".join(lines) + "\n"
+    return (
+        json.loads(metadata_path.read_text(encoding="utf-8")),
+        json.loads(baseline_path.read_text(encoding="utf-8")),
+    )
+
+
+def _validation_models(
+    baseline: dict[str, Any],
+    reports_dir: Path,
+) -> dict[str, dict[str, Any]]:
+    metrics = dict(baseline["validation_models"])
+    pytorch_path = reports_dir / "pytorch_mlp_metrics.json"
+    if pytorch_path.exists():
+        pytorch = json.loads(pytorch_path.read_text(encoding="utf-8"))
+        metrics["pytorch_mlp"] = pytorch["validation"]
+    return metrics
+
+
+def _comparison_markdown(report: dict[str, Any]) -> str:
+    lines = [
+        "# Governed Model Evaluation",
+        "",
+        "## Validation-only candidate comparison",
+        "",
+        "| Model | ROC-AUC | PR-AUC | Balanced accuracy | Sensitivity | Specificity |",
+        "|---|---:|---:|---:|---:|---:|",
+    ]
+    for name, values in report["validation_models"].items():
+        marker = " (selected)" if name == report["selected_model"] else ""
+        lines.append(
+            f"| {name}{marker} | {values['roc_auc']:.4f} | {values['pr_auc']:.4f} | "
+            f"{values['balanced_accuracy']:.4f} | {values['sensitivity']:.4f} | "
+            f"{values['specificity']:.4f} |"
+        )
+
+    locked = report["locked_test"]["metrics"]
+    matrix = locked["confusion_matrix"]
+    lines.extend(
+        [
+            "",
+            "## Governed test result",
+            "",
+            f"- Selected model: `{report['selected_model']}`",
+            f"- Selection metric: `{report['selection']['metric']}`",
+            f"- Fixed threshold: `{report['threshold']['value']}`",
+            f"- Calibration status: `{report['calibration_status']}`",
+            f"- Sample count: {locked['sample_count']}",
+            f"- Confusion matrix order: malignant, benign; values: `{matrix}`",
+            f"- Malignant-to-benign errors: {locked['false_negative_count']}",
+            f"- Benign-to-malignant errors: {locked['false_positive_count']}",
+            f"- ROC-AUC: {locked['roc_auc']:.4f}",
+            f"- PR-AUC: {locked['pr_auc']:.4f}",
+            "",
+            "This 86-row test artifact has been exposed during prior portfolio development. "
+            "It is retained as a governed regression set, not represented as a pristine "
+            "scientific benchmark.",
+            "",
+            EDUCATIONAL_LIMITATION,
+            "",
+        ]
+    )
+    return "\n".join(lines)
 
 
 def evaluate_models(
     models_dir: Path = MODELS_DIR,
     reports_dir: Path = REPORTS_DIR,
-) -> dict[str, dict[str, Any]]:
-    bundle = load_dataset_frame()
-    splits = split_dataset(bundle.features, bundle.target, _load_seed(models_dir))
-    model_names = ["logistic_regression", "random_forest", "gradient_boosting"]
-    predictions: dict[str, tuple[np.ndarray, np.ndarray]] = {}
-    for name in model_names:
-        path = models_dir / f"{name}.joblib"
-        if path.exists():
-            model = joblib.load(path)
-            predictions[name] = (
-                model.predict(splits.X_test),
-                model.predict_proba(splits.X_test)[:, 0],
-            )
-    if (models_dir / "pytorch_mlp.pt").exists():
-        predictions["pytorch_mlp"] = _pytorch_predictions(
-            models_dir / "pytorch_mlp.pt",
-            splits.X_test.to_numpy(),
-        )
-    if not predictions:
-        raise FileNotFoundError("No trained model artifacts were found.")
+) -> dict[str, Any]:
+    metadata, baseline = _load_training_contract(models_dir, reports_dir)
+    selected_model = str(metadata["model_name"])
+    if selected_model != baseline["selected_model"]:
+        raise ValueError("Selected-model metadata disagrees with baseline selection evidence.")
 
-    metrics = {
-        name: classification_metrics(
-            splits.y_test.to_numpy(),
-            prediction,
-            malignant_probability,
-        )
-        for name, (prediction, malignant_probability) in predictions.items()
+    bundle = load_dataset_frame()
+    seed = int(metadata["random_seed"])
+    splits = split_dataset(bundle.features, bundle.target, seed)
+    governed_split = split_manifest(splits, seed)
+    if governed_split["assignment_sha256"] != metadata["split_assignment_sha256"]:
+        raise ValueError("Split assignment no longer matches the trained-model metadata.")
+
+    model = joblib.load(models_dir / "best_model.joblib")
+    score = malignant_scores(model.classes_, model.predict_proba(splits.X_test))
+    prediction = predictions_from_malignant_scores(score, DECISION_THRESHOLD)
+    locked_metrics = classification_metrics(
+        splits.y_test.to_numpy(),
+        prediction,
+        score,
+        threshold=DECISION_THRESHOLD,
+    )
+
+    reports_dir.mkdir(parents=True, exist_ok=True)
+    predictions = pd.DataFrame(
+        {
+            "row_id": splits.X_test.index.astype(int),
+            "actual_raw_target": splits.y_test.to_numpy(dtype=int),
+            "predicted_raw_target": prediction.astype(int),
+            "malignant_class_score": score,
+        }
+    ).sort_values("row_id")
+    predictions.to_csv(reports_dir / "locked_test_predictions.csv", index=False)
+
+    report: dict[str, Any] = {
+        "schema_version": 1,
+        "dataset_fingerprint": dataset_fingerprint(bundle),
+        "selected_model": selected_model,
+        "selection": {
+            "metric": baseline["selection_metric"],
+            "value": metadata["selection_value"],
+            "tie_breaking_rule": baseline["tie_breaking_rule"],
+        },
+        "split": governed_split,
+        "threshold": {
+            "value": DECISION_THRESHOLD,
+            "source": "fixed default before governed test evaluation",
+        },
+        "calibration_status": CALIBRATION_STATUS,
+        "validation_models": _validation_models(baseline, reports_dir),
+        "locked_test": {
+            "status": "governed_portfolio_regression_set_previously_exposed",
+            "evaluated_at": datetime.now(UTC).isoformat(),
+            "metrics": locked_metrics,
+        },
+        "educational_limitation": EDUCATIONAL_LIMITATION,
     }
+
     figures_dir = reports_dir / "figures"
     figures_dir.mkdir(parents=True, exist_ok=True)
-
-    best_name = max(metrics, key=lambda name: metrics[name]["roc_auc"])
     figure, axis = plt.subplots(figsize=(5.5, 5))
     ConfusionMatrixDisplay(
-        confusion_matrix=np.asarray(metrics[best_name]["confusion_matrix"]),
-        display_labels=bundle.target_names,
+        confusion_matrix=np.asarray(locked_metrics["confusion_matrix"]),
+        display_labels=["malignant", "benign"],
     ).plot(ax=axis, colorbar=False, cmap="Purples")
-    axis.set_title(f"Confusion matrix: {best_name}")
+    axis.set_title(f"Governed test confusion matrix: {selected_model}")
     figure.tight_layout()
     figure.savefig(figures_dir / "confusion_matrix.png", dpi=160)
     plt.close(figure)
 
+    malignant_truth = splits.y_test.to_numpy() == 0
     figure, axis = plt.subplots(figsize=(7, 5.5))
-    for name, (_, probability) in predictions.items():
-        RocCurveDisplay.from_predictions(
-            splits.y_test == 0,
-            probability,
-            name=name,
-            ax=axis,
-        )
+    RocCurveDisplay.from_predictions(
+        malignant_truth,
+        score,
+        name=selected_model,
+        ax=axis,
+    )
     axis.plot([0, 1], [0, 1], linestyle=":", color="#777777")
-    axis.set_title("ROC curves on shared test set")
+    axis.set_title("Selected model ROC curve on governed test set")
     figure.tight_layout()
     figure.savefig(figures_dir / "roc_curve.png", dpi=160)
     plt.close(figure)
 
     figure, axis = plt.subplots(figsize=(7, 5.5))
-    for name, (_, probability) in predictions.items():
-        PrecisionRecallDisplay.from_predictions(
-            splits.y_test == 0,
-            probability,
-            name=name,
-            ax=axis,
-        )
-    axis.set_title("Precision-recall curves for malignant class")
+    PrecisionRecallDisplay.from_predictions(
+        malignant_truth,
+        score,
+        name=selected_model,
+        ax=axis,
+    )
+    axis.set_title("Selected model precision-recall curve for malignant class")
     figure.tight_layout()
     figure.savefig(figures_dir / "precision_recall_curve.png", dpi=160)
     plt.close(figure)
 
-    reports_dir.mkdir(parents=True, exist_ok=True)
     (reports_dir / "evaluation_metrics.json").write_text(
-        json.dumps({"best_test_model": best_name, "models": metrics}, indent=2),
+        json.dumps(report, indent=2),
         encoding="utf-8",
     )
     (reports_dir / "model_comparison.md").write_text(
-        _comparison_markdown(metrics),
+        _comparison_markdown(report),
         encoding="utf-8",
     )
-    return metrics
+    return report
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Evaluate all trained models.")
+    parser = argparse.ArgumentParser(description="Evaluate the frozen selected model.")
     parser.parse_args()
-    metrics = evaluate_models()
-    print(f"Evaluated {len(metrics)} models.")
+    report = evaluate_models()
+    print(
+        "Evaluated selected model "
+        f"{report['selected_model']} on {report['locked_test']['metrics']['sample_count']} "
+        "governed test rows."
+    )
 
 
 if __name__ == "__main__":

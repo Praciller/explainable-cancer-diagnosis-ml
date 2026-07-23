@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -52,16 +52,22 @@ class BatchPredictionRequest(BaseModel):
 
 class FeatureContribution(BaseModel):
     feature: str
-    importance: float
+    contribution: float
+    direction: Literal["toward_malignant", "toward_benign", "magnitude_only"]
 
 
 class PredictionResponse(BaseModel):
-    predicted_class: str
-    predicted_class_id: int
-    confidence: float
-    probabilities: dict[str, float]
-    top_features: list[FeatureContribution]
-    disclaimer: str
+    model_classification: Literal["malignant", "benign"]
+    raw_target: Literal[0, 1]
+    malignant_class_score: float
+    decision_threshold: float
+    calibration_status: Literal["uncalibrated"]
+    score_interpretation: str
+    warning_flags: list[str]
+    model_version: str
+    explanation_available: bool
+    top_feature_contributions: list[FeatureContribution]
+    educational_limitation: str
 
 
 class BatchPredictionResponse(BaseModel):
@@ -73,6 +79,7 @@ class FeatureDefinition(BaseModel):
     minimum: float
     maximum: float
     mean: float
+    measurement_context: str
 
 
 class FeatureListResponse(BaseModel):
@@ -80,10 +87,29 @@ class FeatureListResponse(BaseModel):
 
 
 class SampleRecord(BaseModel):
-    id: int
-    known_label: str
+    dataset_row_id: int
+    known_label: Literal["malignant", "benign"]
     features: dict[str, float]
 
 
 class SampleListResponse(BaseModel):
     samples: list[SampleRecord]
+
+
+class ModelInfoResponse(BaseModel):
+    model_name: str
+    problem_type: Literal["binary_classification"]
+    features: int
+    classes: list[str]
+    positive_class: Literal["malignant"]
+    dataset_fingerprint: str
+    model_version: str
+    decision_threshold: float
+    calibration_status: Literal["uncalibrated"]
+    educational_limitation: str
+
+
+class ReadinessResponse(BaseModel):
+    status: Literal["ready"]
+    model_version: str
+    manifest_validated: Literal[True]

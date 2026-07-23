@@ -1,247 +1,212 @@
 # Explainable Cancer Diagnosis ML
 
-**Live demo:** https://explainable-cancer-diagnosis-ml.vercel.app
+An educational explainable tabular-ML system that compares classifiers on a governed breast-cancer dataset split, evaluates malignant-case errors, validates model artifacts, and exposes bounded model-behavior explanations through FastAPI and React.
 
-End-to-end tabular machine learning portfolio project using the Breast Cancer Wisconsin Diagnostic dataset from scikit-learn. It compares scikit-learn models and a PyTorch MLP, evaluates safety-relevant classification metrics, explains model behavior with SHAP, serves strict inference through FastAPI, and presents the evidence in a React dashboard.
+> **Educational-use boundary:** This project is an educational machine-learning portfolio demonstration. It is not intended for diagnosis, screening, treatment, medical advice, or clinical decision-making.
 
-> **Medical disclaimer:** This system is a machine learning portfolio demo and is not intended for medical diagnosis or clinical decision-making.
+**Public showcase status:** [explainable-cancer-diagnosis-ml.vercel.app](https://explainable-cancer-diagnosis-ml.vercel.app/) was reachable and read-only on 2026-07-23. Live inference is not publicly exposed. The deployed site still shows the earlier evidence contract until these local changes receive separate deployment approval.
 
-## Problem Statement
+Verified engineering outcomes:
 
-Classify each dataset sample as malignant (`0`) or benign (`1`) while demonstrating:
+- deterministic offline loading of 569 Breast Cancer Wisconsin (Diagnostic) rows with a full dataset fingerprint;
+- an explicit malignant-positive label contract and leakage-safe 398/85/86 train/validation/governed-test split;
+- validation-only candidate selection followed by one selected-model evaluation on the governed portfolio regression set;
+- checksum-validated model, metrics, threshold, class, feature-order, SHAP, and report provenance before FastAPI inference.
 
-- reproducible offline data loading and validation;
-- leakage-safe preprocessing and fair model comparison;
-- sensitivity, specificity, macro F1, ROC-AUC, and error analysis;
-- global and local explainability;
-- production-style API contracts and a usable interpretation dashboard.
+![Evidence dashboard with educational-use disclaimer](docs/screenshots/overview.png)
 
-## Dataset
+## Review in under 10 minutes
 
-The project uses `sklearn.datasets.load_breast_cancer(as_frame=True)`. The dataset contains 569 rows and 30 numeric measurements computed from digitized breast-mass images. No login, scraping, Kaggle account, or external download is required.
+1. Read the dataset, label, split, and limitation contracts below.
+2. Inspect [`reports/model_comparison.md`](reports/model_comparison.md) and [`reports/error_analysis.md`](reports/error_analysis.md).
+3. Run `python -m pytest` and the frontend tests.
+4. Run `python -m src.pipeline --seed 42 --mlp-epochs 100`.
+5. Start FastAPI, inspect `/ready`, `/model-info`, and one dataset-row `/predict` response.
+6. Start React and confirm that the public mode is read-only while local mode supports dataset-row inference.
 
-See [docs/data_source.md](docs/data_source.md).
+## Dataset and label contract
 
-## Measured Results
+The project loads `sklearn.datasets.load_breast_cancer(as_frame=True)` from scikit-learn `1.6.1`. This is the Breast Cancer Wisconsin (Diagnostic) dataset. Each row contains 30 measurements computed from a digitized image of a fine-needle aspirate sample; it is not a symptom form or a current patient record.
 
-Seed: `42`. Shared held-out test set: 86 rows. Malignant is treated as the safety-relevant positive class for precision, recall, sensitivity, and ROC-AUC.
+| Contract field | Verified value |
+|---|---|
+| Rows / features | 569 / 30 |
+| Class distribution | 212 malignant, 357 benign |
+| Raw targets | `0 = malignant`, `1 = benign` |
+| Safety-relevant positive class | malignant (`0`) |
+| Confusion-matrix order | malignant, benign |
+| Model-score column | resolved from `model.classes_`, never assumed by position |
+| SHAP output class | malignant |
+| Dataset SHA-256 | `f721302d723688b8cce20f5f9b5c1bfcd654703234c137b9df575fca7fe7e218` |
+| Missing / duplicate feature rows | 0 / 0 |
+| Physical units | not specified by the bundled dataset documentation |
 
-| Model | Accuracy | Precision | Recall | F1 | ROC-AUC | Sensitivity | Specificity |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| Logistic Regression | 0.9884 | 1.0000 | 0.9688 | 0.9841 | 0.9954 | 0.9688 | 1.0000 |
-| Random Forest | 0.8953 | 0.8966 | 0.8125 | 0.8525 | 0.9797 | 0.8125 | 0.9444 |
-| Gradient Boosting | 0.9186 | 0.9310 | 0.8438 | 0.8852 | 0.9757 | 0.8438 | 0.9630 |
-| PyTorch MLP | 0.9535 | 0.9375 | 0.9375 | 0.9375 | 0.9936 | 0.9375 | 0.9630 |
+The source description attributes the data to Wolberg, Street, and Mangasarian and the University of Wisconsin. See [`docs/data_source.md`](docs/data_source.md) and [`reports/dataset_metadata.md`](reports/dataset_metadata.md).
 
-Logistic Regression is selected by validation ROC-AUC. On the test set it produced one malignant-to-benign error and no benign-to-malignant errors. These results are educational and are not evidence of clinical validity.
+## Leakage-safe evaluation protocol
 
-## Tech Stack
+Seed `42` creates one deterministic stratified split:
 
-- Python 3.10+, pandas, NumPy, scikit-learn
-- PyTorch, SHAP, MLflow (optional local tracking)
-- FastAPI, Pydantic, Uvicorn
-- React 19, Vite 8, TypeScript, Tailwind CSS 4, Recharts
-- pytest, Vitest, Docker Compose, GitHub Actions
+| Boundary | Rows | Use |
+|---|---:|---|
+| Train | 398 | Fit model parameters and preprocessing |
+| Validation | 85 | Compare candidates and select the model |
+| Governed test | 86 | Evaluate the frozen selected model |
 
-## Architecture
+`StandardScaler` is fitted only on training rows. Candidate selection, early stopping, and threshold trade-off plots use no test labels. Split identity is recorded by row IDs and assignment SHA-256 `497e9350c039abd8f56c26e0fd3d6abf962bb8008fce5379f0b1790a9684df9c`.
 
-```mermaid
-flowchart LR
-    A["scikit-learn WDBC dataset"] --> B["Load + validate"]
-    B --> C["Stratified 70/15/15 split"]
-    C --> D["Baseline models"]
-    C --> E["PyTorch MLP"]
-    D --> F["Shared test evaluation"]
-    E --> F
-    F --> G["SHAP + error analysis"]
-    D --> H["FastAPI prediction service"]
-    G --> I["React evidence dashboard"]
-    H --> I
+The test rows were exposed during earlier portfolio development. This repository therefore treats them honestly as a governed regression set, not an untouched scientific benchmark.
+
+## Model comparison and governed-test result
+
+Candidate selection uses validation ROC-AUC with a documented tie-break that prefers Logistic Regression, then Random Forest, then Gradient Boosting when ranking values tie. The lower-complexity Logistic Regression is selected.
+
+| Validation model | ROC-AUC | PR-AUC | Balanced accuracy | Sensitivity | Specificity |
+|---|---:|---:|---:|---:|---:|
+| Majority dummy | 0.5000 | 0.3765 | 0.5000 | 0.0000 | 1.0000 |
+| Logistic Regression, selected | 1.0000 | 1.0000 | 0.9906 | 1.0000 | 0.9811 |
+| Random Forest | 1.0000 | 1.0000 | 0.9906 | 1.0000 | 0.9811 |
+| Gradient Boosting | 0.9994 | 0.9991 | 0.9749 | 0.9688 | 0.9811 |
+| PyTorch MLP challenger | 1.0000 | 1.0000 | 0.9811 | 1.0000 | 0.9623 |
+
+Frozen Logistic Regression on the 86-row governed test:
+
+- confusion matrix `[[31, 1], [0, 54]]`, rows actual and columns model classification in malignant/benign order;
+- 1 malignant-to-benign error and 0 benign-to-malignant errors;
+- malignant precision `1.0000`, sensitivity `0.9688`, specificity `1.0000`;
+- balanced accuracy `0.9844`, malignant F1 `0.9841`;
+- ROC-AUC `0.9954`, PR-AUC `0.9938`.
+
+One error on a small, clean dataset does not establish safety, clinical utility, or real-world performance.
+
+## Threshold and calibration status
+
+The model uses a fixed malignant-class score threshold of `0.50`, set before governed-test evaluation. The threshold trade-off figure is generated from validation rows only and is an educational behavior view, not a recommended medical threshold.
+
+Scores are **uncalibrated**. API and frontend copy therefore use “malignant-class model score,” not “confidence,” “risk,” or “chance of cancer.” A score must not be interpreted as an individual clinical probability.
+
+## Explainability boundaries
+
+The selected pipeline uses standardized coefficients and `shap.LinearExplainer`. Binary Logistic Regression natively exposes class-1 log-odds, so the implementation explicitly negates values and the base value to reconstruct malignant-class (`0`) log-odds. Tests verify feature order, class orientation, contribution sign, and score reconstruction.
+
+These explanations describe how the model used supplied measurements. They do not prove biological causality, medical importance, or why cancer develops. Correlated features can redistribute coefficient and SHAP attribution.
+
+See [`docs/explainability.md`](docs/explainability.md).
+
+## Artifact governance
+
+`python -m src.pipeline` creates one `models/artifact_manifest.json` containing:
+
+- dataset fingerprint, package versions, feature order, and label contract;
+- split seed, row counts, row IDs, and assignment checksum;
+- preprocessing boundary, selected model, validation evidence, threshold, and calibration status;
+- governed-test metrics, artifact paths, SHA-256 checksums, and model version;
+- the educational limitation and trusted-artifact boundary.
+
+FastAPI fails closed when the manifest is missing, incomplete, stale, path-invalid, feature- or label-inconsistent, or checksum-invalid. `joblib` and PyTorch files are code-bearing formats; load only artifacts generated by this repository and never user-supplied paths.
+
+Generated local artifact identity for this evidence run: `bbb5977c47501cd9a962`.
+
+## API and dashboard
+
+FastAPI endpoints:
+
+- `GET /health`: process liveness;
+- `GET /ready`: validated-manifest readiness;
+- `GET /model-info`: version, label, threshold, calibration, and limitation metadata;
+- `GET /features`: canonical ordered schema and observed range references;
+- `GET /samples`: balanced educational dataset rows;
+- `POST /predict`: one strict 30-feature request;
+- `POST /predict-batch`: 1 to 100 strict requests.
+
+Requests reject missing, unknown, boolean, string, non-numeric, non-finite, and oversized inputs. Values outside observed dataset ranges are accepted with explicit warning flags instead of being treated as invalid clinical ranges.
+
+Prediction responses expose model classification, malignant-class score, threshold, calibration status, warning flags, model version, bounded feature contributions, and the full educational limitation.
+
+The React dashboard uses the generated [`frontend/src/data/showcase_contract.json`](frontend/src/data/showcase_contract.json), not duplicated hand-entered metrics. Vercel mode is read-only. Local mode connects to FastAPI for dataset-row inference.
+
+## Local quickstart
+
+Python:
+
+```bash
+python -m venv .venv
 ```
 
-Production logic lives under `src/`; notebooks call those modules instead of duplicating training code.
-
-## Local Setup
-
-### Windows PowerShell
+PowerShell:
 
 ```powershell
-python -m venv .venv
 .venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-pip install -r requirements.txt
+pip install -r requirements-dev.txt
+python -m src.pipeline --seed 42 --mlp-epochs 100
+uvicorn src.api.main:app --port 8000
 ```
 
-If `python` opens the Microsoft Store alias, use an installed Python 3.10+ executable directly.
-
-### macOS or Linux
+POSIX:
 
 ```bash
-python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-pip install -r requirements.txt
+pip install -r requirements-dev.txt
+python -m src.pipeline --seed 42 --mlp-epochs 100
+uvicorn src.api.main:app --port 8000
 ```
 
-## Reproduce the Pipeline
-
-```bash
-python -m src.data.load_dataset
-python -m src.data.validate_dataset
-python -m src.evaluation.generate_eda
-python -m src.models.train_baseline --seed 42
-python -m src.models.train_pytorch_mlp --seed 42 --epochs 100 --batch-size 32
-python -m src.evaluation.evaluate_models
-python -m src.evaluation.error_analysis
-python -m src.explainability.explain_model
-```
-
-Generated models, metrics JSON, and figures are intentionally ignored by Git. Run these commands after cloning.
-
-## API
-
-```bash
-uvicorn src.api.main:app --reload --port 8000
-```
-
-- Swagger UI: `http://localhost:8000/docs`
-- `GET /health`
-- `GET /model-info`
-- `GET /features`
-- `GET /samples`
-- `POST /predict`
-- `POST /predict-batch` (maximum 100 rows)
-
-The prediction schema requires exactly the 30 named finite numeric features. Numeric strings, missing keys, unknown keys, booleans, and non-finite values are rejected.
-
-See [docs/api.md](docs/api.md).
-
-## Frontend
+Frontend, in a second terminal:
 
 ```bash
 cd frontend
-npm install
+npm ci
 npm run dev
 ```
 
-Open `http://localhost:5173`. The dashboard leads with sample-based prediction and progressively reveals the 30-feature form.
+Open `http://localhost:5173`. To update the checked-in read-only evidence snapshot after a reviewed pipeline run, rerun the pipeline with `--publish-showcase`.
 
-Pages:
-
-- Overview
-- Prediction
-- Model Evaluation
-- Explainability
-
-See [docs/frontend.md](docs/frontend.md).
-
-## Frontend Deployment
-
-Production frontend:
-
-https://explainable-cancer-diagnosis-ml.vercel.app
-
-Vercel hosts a read-only showcase with measured evaluation and explainability artifacts. Live
-prediction is intentionally not exposed from Vercel in v1. Run `docker compose up --build` to use
-the sample-based inference workflow with the local FastAPI backend.
-
-The backend may be deployed later as a separate Docker service, such as Hugging Face Spaces. It is
-not deployed to Vercel or Netlify.
-
-## MLflow
-
-MLflow is optional. Normal training does not import or require an MLflow server.
-
-```bash
-pip install -r requirements-mlflow.txt
-python -m src.models.train_baseline --seed 42 --mlflow
-python -m src.models.train_pytorch_mlp --seed 42 --epochs 100 --mlflow
-mlflow ui
-```
-
-Open `http://localhost:5000`. Local `mlruns/` and `mlartifacts/` directories are ignored.
-
-## Docker
-
-Docker is optional:
+Docker builds governed artifacts into the API image and never trains at container startup:
 
 ```bash
 docker compose up --build
 ```
 
-- Frontend: `http://localhost:5173`
-- API: `http://localhost:8000`
-- API docs: `http://localhost:8000/docs`
+Docker is optional; no external API, cloud service, account, medical record, paid service, or GPU is required.
 
-The API container bootstraps local demo artifacts when they are absent.
-
-## Tests
+## Testing and CI
 
 ```bash
+ruff format --check src tests
+ruff check src tests
+python -m compileall -q src tests
 python -m pytest
 cd frontend
+npm ci
+npm audit --audit-level=high
 npm test
 npm run build
+docker compose config --quiet
 ```
 
-Backend tests cover data loading, split behavior, model artifacts, PyTorch checkpoints, report generation, strict prediction schemas, and API endpoints. Frontend tests cover the safety disclaimer and sample-first workflow.
+CI runs Python formatting/linting, compilation, backend tests, frontend audit/tests/build, and Compose validation. Regression tests cover dataset and label contracts, class-score orientation, split determinism, train-only scaling, validation-only selection, metric orientation, SHAP reconstruction, artifact checksums, strict API validation, OOD warnings, request size, safety copy, generated frontend evidence, local links, and machine-path guardrails.
 
-## Project Structure
+## Scope and limitations
 
-```text
-src/
-  data/              dataset loading and validation
-  features/          deterministic splitting and scaling
-  models/            scikit-learn and PyTorch training
-  evaluation/        metrics, EDA, curves, error analysis
-  explainability/    feature importance and SHAP
-  api/               schemas, prediction service, FastAPI
-frontend/            React/Vite dashboard
-notebooks/           orchestration and exploration
-tests/               public-behavior tests
-docs/                technical and portfolio documentation
-```
+- This is one deterministic split of a small, clean educational dataset.
+- The governed test artifact has been inspected before and is not a pristine research holdout.
+- No external, prospective, demographic-representativeness, fairness, or clinical validation is included.
+- Model scores are uncalibrated and are not individual medical probabilities or risk estimates.
+- Observed feature ranges are descriptive, not clinical validity bounds.
+- SHAP and coefficients explain model behavior, not biology or causality.
+- The local API has no authentication because it serves public educational dataset rows only.
+- The project makes no claim of clinical validity, regulatory compliance, production readiness, or medical-device security.
 
-## Explainability
+See [`docs/limitations.md`](docs/limitations.md).
 
-The selected Logistic Regression model is most influenced globally by features including `worst texture`, `worst concave points`, `worst area`, and `worst radius`. SHAP summary and waterfall plots describe model behavior only. Correlated features can redistribute importance, and explanations do not establish causality.
+## Documentation
 
-See [docs/explainability.md](docs/explainability.md).
-
-## Screenshots
-
-![Overview dashboard](docs/screenshots/overview.png)
-
-![Sample-based prediction](docs/screenshots/prediction.png)
-
-![Model evaluation dashboard](docs/screenshots/evaluation.png)
-
-![Explainability dashboard](docs/screenshots/explainability.png)
-
-## Limitations
-
-- The dataset is small, clean, and educational compared with real clinical data.
-- No external or prospective validation is included.
-- Feature measurements are not user-friendly manual inputs.
-- Model probabilities are not calibrated for clinical interpretation.
-- SHAP explains the model, not biology or causality.
-- High test scores on this dataset do not imply real-world medical performance.
-
-See [docs/limitations.md](docs/limitations.md).
-
-## Future Improvements
-
-- threshold tuning and calibration views;
-- CSV batch upload;
-- confidence and drift monitoring;
-- ONNX export;
-- independent external dataset validation;
-- generated model cards and richer experiment comparison.
-
-## Resume Bullet
-
-Built a local-first explainable tabular ML system using scikit-learn, PyTorch, SHAP, FastAPI, and React to compare classifiers on a shared test set, analyze safety-relevant errors, serve strict 30-feature inference, and explain model outputs through an interactive dashboard.
-
-## Portfolio Review
-
-See [PORTFOLIO_REVIEW.md](PORTFOLIO_REVIEW.md) for reviewer paths, demonstrated skills, and honest remaining gaps.
+- [`docs/data_source.md`](docs/data_source.md)
+- [`docs/modeling_approach.md`](docs/modeling_approach.md)
+- [`docs/evaluation.md`](docs/evaluation.md)
+- [`docs/explainability.md`](docs/explainability.md)
+- [`docs/api.md`](docs/api.md)
+- [`docs/frontend.md`](docs/frontend.md)
+- [`PORTFOLIO_REVIEW.md`](PORTFOLIO_REVIEW.md)

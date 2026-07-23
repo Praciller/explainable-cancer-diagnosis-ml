@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -9,14 +8,21 @@ from pathlib import Path
 from typing import Any
 
 import joblib
+from sklearn.dummy import DummyClassifier
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
 from src.config import MODELS_DIR, RANDOM_SEED, REPORTS_DIR
-from src.data.load_dataset import load_dataset_frame
-from src.features.preprocess import split_dataset
+from src.contracts import (
+    CALIBRATION_STATUS,
+    DECISION_THRESHOLD,
+    malignant_scores,
+    predictions_from_malignant_scores,
+)
+from src.data.load_dataset import dataset_fingerprint, load_dataset_frame
+from src.features.preprocess import split_dataset, split_manifest
 from src.utils.metrics import classification_metrics
 from src.utils.tracking import optional_mlflow_run
 
@@ -29,6 +35,7 @@ class BaselineTrainingResult:
 
 def _models(seed: int) -> dict[str, Any]:
     return {
+        "dummy_majority": DummyClassifier(strategy="most_frequent"),
         "logistic_regression": Pipeline(
             [
                 ("scaler", StandardScaler()),
@@ -50,17 +57,21 @@ def _models(seed: int) -> dict[str, Any]:
 
 def _comparison_markdown(metrics: dict[str, dict[str, Any]], best_model: str) -> str:
     rows = [
-        "| Model | Validation ROC-AUC | Accuracy | Precision | Recall | F1 |",
+        "| Model | Validation ROC-AUC | PR-AUC | Balanced accuracy | Sensitivity | Specificity |",
         "|---|---:|---:|---:|---:|---:|",
     ]
     for name, values in metrics.items():
         marker = " (best)" if name == best_model else ""
         rows.append(
-            f"| {name}{marker} | {values['validation_roc_auc']:.4f} | "
-            f"{values['accuracy']:.4f} | {values['precision']:.4f} | "
-            f"{values['recall']:.4f} | {values['f1']:.4f} |"
+            f"| {name}{marker} | {values['roc_auc']:.4f} | "
+            f"{values['pr_auc']:.4f} | {values['balanced_accuracy']:.4f} | "
+            f"{values['sensitivity']:.4f} | {values['specificity']:.4f} |"
         )
-    return "# Baseline Model Comparison\n\n" + "\n".join(rows) + "\n"
+    return (
+        "# Validation Model Comparison\n\n"
+        "Candidate selection uses validation evidence only. The governed test set is "
+        "not included in this table.\n\n" + "\n".join(rows) + "\n"
+    )
 
 
 def train_baseline_models(
@@ -83,20 +94,16 @@ def train_baseline_models(
             {"model_name": name, "random_seed": seed, "dataset_version": "sklearn-wdbc"},
         ) as tracker:
             model.fit(splits.X_train, splits.y_train)
-            validation_prediction = model.predict(splits.X_validation)
-            validation_probability = model.predict_proba(splits.X_validation)[:, 0]
-            test_prediction = model.predict(splits.X_test)
-            test_probability = model.predict_proba(splits.X_test)[:, 0]
-            values = classification_metrics(
-                splits.y_test.to_numpy(),
-                test_prediction,
-                test_probability,
+            validation_score = malignant_scores(
+                model.classes_,
+                model.predict_proba(splits.X_validation),
             )
-            values["validation_roc_auc"] = classification_metrics(
+            validation_prediction = predictions_from_malignant_scores(validation_score)
+            values = classification_metrics(
                 splits.y_validation.to_numpy(),
                 validation_prediction,
-                validation_probability,
-            )["roc_auc"]
+                validation_score,
+            )
             metrics[name] = values
             trained_models[name] = model
             joblib.dump(model, models_dir / f"{name}.joblib")
@@ -105,20 +112,34 @@ def train_baseline_models(
                     {key: value for key, value in values.items() if isinstance(value, float)}
                 )
 
-    best_model_name = max(metrics, key=lambda name: metrics[name]["validation_roc_auc"])
+    selection_priority = (
+        "logistic_regression",
+        "random_forest",
+        "gradient_boosting",
+    )
+    best_model_name = max(
+        selection_priority,
+        key=lambda name: (metrics[name]["roc_auc"], -selection_priority.index(name)),
+    )
     joblib.dump(trained_models[best_model_name], models_dir / "best_model.joblib")
-    dataset_hash = hashlib.sha256(
-        bundle.frame.to_csv(index=False).encode("utf-8")
-    ).hexdigest()[:16]
+    dataset_hash = dataset_fingerprint(bundle)
+    governed_split = split_manifest(splits, seed)
     payload = {
-        "best_model": best_model_name,
+        "selected_model": best_model_name,
         "selection_metric": "validation_roc_auc",
+        "tie_breaking_rule": (
+            "Highest validation ROC-AUC; ties prefer logistic_regression, then "
+            "random_forest, then gradient_boosting for lower complexity and interpretability."
+        ),
+        "decision_threshold": DECISION_THRESHOLD,
+        "calibration_status": CALIBRATION_STATUS,
         "feature_names": bundle.feature_names,
         "target_names": bundle.target_names,
         "random_seed": seed,
-        "dataset_version": dataset_hash,
+        "dataset_fingerprint": dataset_hash,
         "training_date": datetime.now(UTC).isoformat(),
-        "models": metrics,
+        "validation_models": metrics,
+        "split": governed_split,
     }
     (reports_dir / "baseline_metrics.json").write_text(
         json.dumps(payload, indent=2),
@@ -132,8 +153,14 @@ def train_baseline_models(
                 "features": len(bundle.feature_names),
                 "feature_names": bundle.feature_names,
                 "classes": bundle.target_names,
+                "raw_classes": [0, 1],
                 "random_seed": seed,
-                "dataset_version": dataset_hash,
+                "dataset_fingerprint": dataset_hash,
+                "selection_metric": "validation_roc_auc",
+                "selection_value": metrics[best_model_name]["roc_auc"],
+                "decision_threshold": DECISION_THRESHOLD,
+                "calibration_status": CALIBRATION_STATUS,
+                "split_assignment_sha256": governed_split["assignment_sha256"],
             },
             indent=2,
         ),

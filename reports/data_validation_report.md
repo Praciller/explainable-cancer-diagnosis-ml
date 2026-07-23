@@ -5,7 +5,11 @@
 - Rows: 569
 - Numeric features: 30
 - Duplicate feature rows: 0
+- Duplicate feature columns: 0
+- Constant features: 0
+- Non-finite values: 0
 - Missing values: 0
+- Canonical CSV SHA-256: `f721302d723688b8cce20f5f9b5c1bfcd654703234c137b9df575fca7fe7e218`
 - Class ratio: 1.68
 - Assessment: Class imbalance is mild and is handled with stratified splits.
 
@@ -125,7 +129,7 @@
 
 ## Outlier Summary
 
-Counts use a simple three-standard-deviation screen and are descriptive, not grounds for automatic removal.
+Counts use a simple three-standard-deviation screen and are descriptive, not clinical validity ranges and not grounds for automatic removal.
 
 |                         |   count |
 |:------------------------|--------:|
@@ -159,3 +163,5 @@ Counts use a simple three-standard-deviation screen and are descriptive, not gro
 | worst concave points    |       0 |
 | worst symmetry          |       9 |
 | worst fractal dimension |       9 |
+
+This project is an educational machine-learning portfolio demonstration. It is not intended for diagnosis, screening, treatment, medical advice, or clinical decision-making.
