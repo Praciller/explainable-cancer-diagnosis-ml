@@ -1282,9 +1282,9 @@ The project is complete when:
 
 ---
 
-# Codex Implementation Prompt
+# Project Implementation Notes
 
-Use this prompt after creating and cloning the new repository.
+Use these notes after creating and cloning the new repository.
 
 ```txt
 You are working inside my new GitHub repository.
