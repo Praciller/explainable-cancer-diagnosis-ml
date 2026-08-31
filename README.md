@@ -6,6 +6,16 @@ An educational explainable tabular-ML system that compares classifiers on a gove
 
 **Public showcase status:** [explainable-cancer-diagnosis-ml.vercel.app](https://explainable-cancer-diagnosis-ml.vercel.app/) is a public, read-only educational evidence dashboard. Chrome verification on 2026-08-30 confirmed the production deployment is `READY` at source main SHA `d0e279a302b497341a11fe6f97a8e10192e39636` (Vercel deployment `dpl_6rJNrmSHoSF6TjnUEyoHTFAL3cTT`). Live inference is not publicly exposed; dataset-row inference remains a local-mode capability.
 
+## Recruiter snapshot
+
+**Signal:** Governed ML evidence interface for evaluation, explainability, calibration, and responsible-use boundaries.
+
+[Repository](https://github.com/Praciller/explainable-cancer-diagnosis-ml) · [Live demo](https://explainable-cancer-diagnosis-ml.vercel.app/) · [Dream Logs case study](https://dreamlogsdata.com/en/projects/explainable-cancer-diagnosis-ml)
+
+**What this demonstrates:** leakage-aware split contracts · artifact validation and evaluation evidence · bounded explanations for a read-only educational interface.
+
+**Boundary:** educational portfolio evidence only; it is not a diagnostic or clinical decision tool.
+
 Verified engineering outcomes:
 
 - deterministic offline loading of 569 Breast Cancer Wisconsin (Diagnostic) rows with a full dataset fingerprint;
