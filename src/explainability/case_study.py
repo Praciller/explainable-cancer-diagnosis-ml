@@ -161,9 +161,29 @@ def verify_case_study_artifact(
     committed = json.loads(committed_path.read_text(encoding="utf-8"))
     generated = build_case_study_artifact()
     if committed != generated:
+        differing_fields = sorted(
+            key
+            for key in set(committed) | set(generated)
+            if committed.get(key) != generated.get(key)
+        )
+        contribution_deltas = [
+            abs(float(current["contribution"]) - float(saved["contribution"]))
+            for saved, current in zip(
+                committed.get("contributions", []),
+                generated.get("contributions", []),
+                strict=False,
+            )
+        ]
+        max_contribution_delta = max(contribution_deltas, default=0.0)
         raise ValueError(
             "Committed explainability case artifact does not match the current "
-            "model, manifest, dataset, and SHAP output."
+            "model, manifest, dataset, and SHAP output. "
+            f"Differing fields: {differing_fields}; "
+            f"committed model_version={committed.get('model_version')!r}, "
+            f"current model_version={generated.get('model_version')!r}; "
+            f"committed model_score={committed.get('model_score')!r}, "
+            f"current model_score={generated.get('model_score')!r}; "
+            f"max contribution delta={max_contribution_delta!r}."
         )
 
 
