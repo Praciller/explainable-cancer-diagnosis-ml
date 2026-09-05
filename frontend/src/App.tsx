@@ -9,6 +9,7 @@ import { lazy, Suspense, useEffect, useState } from "react";
 
 import { ErrorMessage } from "./components/ErrorMessage";
 import { LoadingState } from "./components/LoadingState";
+import { Button } from "./components/ui";
 import {
   getEvaluationReport,
   getFeatures,
@@ -96,16 +97,17 @@ export default function App() {
           {navigation.map((item) => {
             const Icon = item.icon;
             return (
-              <button
+              <Button
+                variant="text"
                 key={item.id}
                 type="button"
-                className={page === item.id ? "active" : ""}
+                className={page === item.id ? "sidebar-nav-button active" : "sidebar-nav-button"}
                 aria-current={page === item.id ? "page" : undefined}
                 onClick={() => navigate(item.id)}
               >
                 <Icon aria-hidden="true" size={19} />
                 {item.label}
-              </button>
+              </Button>
             );
           })}
         </nav>

@@ -1,3 +1,5 @@
+import { Metric } from "./ui";
+
 interface MetricCardProps {
   label: string;
   value: string;
@@ -5,11 +7,5 @@ interface MetricCardProps {
 }
 
 export function MetricCard({ label, value, detail }: MetricCardProps) {
-  return (
-    <div className="metric">
-      <span>{label}</span>
-      <strong>{value}</strong>
-      <small>{detail}</small>
-    </div>
-  );
+  return <Metric label={label} value={value} detail={detail} />;
 }

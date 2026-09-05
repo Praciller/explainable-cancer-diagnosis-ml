@@ -5,6 +5,7 @@ import { DisclaimerBanner } from "../components/DisclaimerBanner";
 import { FeatureInputForm } from "../components/FeatureInputForm";
 import { PredictionResult } from "../components/PredictionResult";
 import { SampleSelector } from "../components/SampleSelector";
+import { Button } from "../components/ui";
 import { predict } from "../services/api";
 import type { FeatureDefinition, PredictionResponse, SampleRecord } from "../types/api";
 
@@ -96,14 +97,14 @@ export function PredictionPage({
               setResult(null);
             }}
           />
-          <button
-            className="text-button"
+          <Button
+            variant="text"
             type="button"
             aria-expanded={showForm}
             onClick={() => setShowForm((current) => !current)}
           >
             {showForm ? "Hide all 30 feature inputs" : "Review all 30 feature inputs"}
-          </button>
+          </Button>
           {showForm ? (
             <FeatureInputForm
               definitions={features}
@@ -115,14 +116,13 @@ export function PredictionPage({
               pending={pending}
             />
           ) : (
-            <button
-              className="button button-primary"
+            <Button
               type="button"
               onClick={runPrediction}
               disabled={pending}
             >
               {pending ? "Running model..." : "Run model prediction"}
-            </button>
+            </Button>
           )}
           {error ? <ErrorMessage message={error} /> : null}
         </section>

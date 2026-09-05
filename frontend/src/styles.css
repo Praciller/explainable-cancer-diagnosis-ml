@@ -18,7 +18,15 @@
   --malignant-soft: oklch(0.94 0.035 32);
   --benign: oklch(0.54 0.1 140);
   --benign-soft: oklch(0.94 0.03 140);
+  --warning: oklch(0.36 0.08 60);
+  --warning-soft: oklch(0.95 0.045 75);
   --error: oklch(0.55 0.19 25);
+  --error-soft: oklch(0.96 0.025 25);
+  --focus: oklch(0.7 0.14 305);
+  --radius-control: 5px;
+  --radius-button: 6px;
+  --radius-compact: 7px;
+  --radius-panel: 9px;
 }
 
 * {
@@ -46,7 +54,7 @@ button:focus-visible,
 input:focus-visible,
 select:focus-visible,
 a:focus-visible {
-  outline: 3px solid oklch(0.7 0.14 305);
+  outline: 3px solid var(--focus);
   outline-offset: 2px;
 }
 
@@ -226,7 +234,7 @@ p {
   padding: 10px 16px;
   font-weight: 650;
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: var(--radius-button);
   cursor: pointer;
   transition:
     background 180ms ease-out,
@@ -272,6 +280,88 @@ p {
   cursor: pointer;
 }
 
+.button-text {
+  width: fit-content;
+  padding: 4px 0;
+  min-height: 44px;
+  color: var(--accent);
+  font-weight: 650;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.button-text:hover:not(:disabled) {
+  color: var(--accent-dark);
+  background: transparent;
+}
+
+.surface {
+  min-width: 0;
+}
+
+.callout {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-compact);
+}
+
+.callout p {
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+}
+
+.callout-disclaimer {
+  color: var(--accent-dark);
+  background: oklch(0.955 0.022 305);
+}
+
+.callout-error {
+  color: var(--error);
+  background: var(--error-soft);
+  border-color: oklch(0.82 0.08 25);
+}
+
+.callout-warning {
+  color: var(--warning);
+  background: var(--warning-soft);
+  border-color: oklch(0.82 0.075 75);
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 4px 8px;
+  border: 1px solid currentColor;
+  border-radius: var(--radius-control);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.status-badge-malignant {
+  color: var(--malignant);
+  background: var(--malignant-soft);
+}
+
+.status-badge-benign {
+  color: var(--benign);
+  background: var(--benign-soft);
+}
+
+.status-badge-warning {
+  color: var(--warning);
+  background: var(--warning-soft);
+}
+
+.status-badge-neutral {
+  color: var(--muted);
+  background: var(--surface);
+}
+
 .disclaimer,
 .error-message {
   display: flex;
@@ -279,7 +369,7 @@ p {
   gap: 14px;
   padding: 18px 20px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-compact);
 }
 
 .deployment-banner {
@@ -508,7 +598,7 @@ input {
   color: var(--text);
   background: var(--canvas);
   border: 1px solid var(--border);
-  border-radius: 5px;
+  border-radius: var(--radius-control);
 }
 
 .feature-grid {

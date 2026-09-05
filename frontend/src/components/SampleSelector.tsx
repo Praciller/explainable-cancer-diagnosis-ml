@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import type { SampleRecord } from "../types/api";
+import { Button } from "./ui";
 
 interface SampleSelectorProps {
   samples: SampleRecord[];
@@ -37,9 +38,9 @@ export function SampleSelector({ samples, onSelect }: SampleSelectorProps) {
           ))}
         </select>
       </div>
-      <button className="button button-secondary" type="button" onClick={loadSample}>
+      <Button variant="secondary" type="button" onClick={loadSample}>
         Load sample
-      </button>
+      </Button>
     </div>
   );
 }

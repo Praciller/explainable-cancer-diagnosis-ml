@@ -1,6 +1,7 @@
 import type { FormEvent } from "react";
 
 import type { FeatureDefinition } from "../types/api";
+import { Button } from "./ui";
 
 interface FeatureInputFormProps {
   definitions: FeatureDefinition[];
@@ -43,9 +44,9 @@ export function FeatureInputForm({
           </div>
         ))}
       </div>
-      <button className="button button-primary" type="submit" disabled={pending}>
+      <Button type="submit" disabled={pending}>
         {pending ? "Running model..." : "Run model prediction"}
-      </button>
+      </Button>
     </form>
   );
 }

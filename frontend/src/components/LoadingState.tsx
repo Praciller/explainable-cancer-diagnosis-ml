@@ -1,9 +1,11 @@
+import { Skeleton } from "./ui";
+
 export function LoadingState({ label = "Loading model evidence" }: { label?: string }) {
   return (
     <div className="loading-state" role="status">
-      <div className="skeleton skeleton-title" />
-      <div className="skeleton" />
-      <div className="skeleton skeleton-short" />
+      <Skeleton label={label} variant="title" />
+      <Skeleton label={label} />
+      <Skeleton label={label} variant="short" />
       <span className="sr-only">{label}</span>
     </div>
   );
