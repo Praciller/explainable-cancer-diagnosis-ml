@@ -30,6 +30,19 @@ Without `VITE_API_URL`, a production frontend build is the read-only showcase. W
 
 The public showcase is a Vite frontend deployed at [explainable-cancer-diagnosis-ml.vercel.app](https://explainable-cancer-diagnosis-ml.vercel.app/). Production builds without `VITE_API_URL` use checked-in `frontend/src/data/showcase_contract.json` and remain read-only. They do not expose the FastAPI inference service. A preview can be inspected separately; local code and a successful build do not establish that a preview or production deployment contains the same commit.
 
+### PR #15 preview evidence
+
+The current final-head PR preview is non-production and was created automatically by the Vercel Git integration:
+
+- Preview alias: [explainable-cancer-diag-git-5a5f1c-pracillatlove-3370s-projects.vercel.app](https://explainable-cancer-diag-git-5a5f1c-pracillatlove-3370s-projects.vercel.app/)
+- Direct deployment URL: [explainable-cancer-diagnosis-82c94u7uq.vercel.app](https://explainable-cancer-diagnosis-82c94u7uq.vercel.app/)
+- GitHub deployment record: `6279879317`
+- Vercel deployment inspector: `2rUohN2n7rxZeZBNbM36MvkZfzxW`
+- Verified source commit: `2d7b0834de0396e4812bc65964c45da9baa006d5`
+- Target: Preview (non-production)
+
+The earlier owner-supplied preview snapshot for the pre-polish head remains useful for audit history: [explainable-cancer-diagnosis-lhoystgqn.vercel.app](https://explainable-cancer-diagnosis-lhoystgqn.vercel.app/) at Vercel deployment `dpl_CVMRKnnuQWpFCGD6vErtzhbWiHUy`, before the final-head polish. Preview aliases and deployment IDs can change when the branch receives a new commit.
+
 ## Build and deployment commands
 
 ```powershell
@@ -42,7 +55,7 @@ npm run build
 npm run build-storybook
 ```
 
-Use the Vercel project’s owner-approved deployment workflow for a preview or production deployment. Do not invent project IDs, deployment IDs, environment values, or credentials in documentation. This runbook does not trigger a deployment.
+Use the Vercel project’s owner-approved deployment workflow for a preview or production deployment. Do not invent project IDs, deployment IDs, environment values, or credentials in documentation. No production deployment or promotion was manually triggered. Vercel Git integration automatically created PR preview deployments.
 
 ## Verification checklist
 
