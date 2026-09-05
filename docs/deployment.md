@@ -32,7 +32,7 @@ The public showcase is a Vite frontend deployed at [explainable-cancer-diagnosis
 
 ### PR #15 preview evidence
 
-The current final-head PR preview is non-production and was created automatically by the Vercel Git integration:
+The verified runtime UI preview snapshot is non-production and was created automatically by the Vercel Git integration:
 
 - Preview alias: [explainable-cancer-diag-git-5a5f1c-pracillatlove-3370s-projects.vercel.app](https://explainable-cancer-diag-git-5a5f1c-pracillatlove-3370s-projects.vercel.app/)
 - Direct deployment URL: [explainable-cancer-diagnosis-82c94u7uq.vercel.app](https://explainable-cancer-diagnosis-82c94u7uq.vercel.app/)
@@ -40,6 +40,8 @@ The current final-head PR preview is non-production and was created automaticall
 - Vercel deployment inspector: `2rUohN2n7rxZeZBNbM36MvkZfzxW`
 - Verified source commit: `2d7b0834de0396e4812bc65964c45da9baa006d5`
 - Target: Preview (non-production)
+
+The later branch-head updates in this verification record are documentation-only and do not change the runtime frontend bundle. Use the PR check and deployment record in the final evidence report for the latest branch SHA.
 
 The earlier owner-supplied preview snapshot for the pre-polish head remains useful for audit history: [explainable-cancer-diagnosis-lhoystgqn.vercel.app](https://explainable-cancer-diagnosis-lhoystgqn.vercel.app/) at Vercel deployment `dpl_CVMRKnnuQWpFCGD6vErtzhbWiHUy`, before the final-head polish. Preview aliases and deployment IDs can change when the branch receives a new commit.
 

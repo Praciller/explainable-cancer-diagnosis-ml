@@ -42,8 +42,9 @@ Feature branch: `chore/sdlc-design-system-hardening`
 - Local E2E used freshly generated artifacts from `python -m src.pipeline --seed 42 --mlp-epochs 100` and a real FastAPI service. Server logs recorded successful `GET /model-info`, `GET /features`, `GET /samples`, `POST /predict`, and report requests.
 - Browser-visible hosted checks confirmed primary navigation, evidence content, disclaimers, hosted local-only prediction messaging, keyboard skip navigation, and mobile layout.
 - Mobile viewport measurement: `innerWidth=390`, `scrollWidth=375`, `bodyScrollWidth=375`; no horizontal overflow.
-- Final-head PR preview: [explainable-cancer-diag-git-5a5f1c-pracillatlove-3370s-projects.vercel.app](https://explainable-cancer-diag-git-5a5f1c-pracillatlove-3370s-projects.vercel.app/) returned the application in a real browser at source commit `2d7b0834de0396e4812bc65964c45da9baa006d5`; GitHub deployment record `6279879317` and Vercel inspector `2rUohN2n7rxZeZBNbM36MvkZfzxW` reported Preview/non-production success.
+- Verified runtime UI preview snapshot: [explainable-cancer-diag-git-5a5f1c-pracillatlove-3370s-projects.vercel.app](https://explainable-cancer-diag-git-5a5f1c-pracillatlove-3370s-projects.vercel.app/) returned the application in a real browser at runtime code commit `2d7b0834de0396e4812bc65964c45da9baa006d5`; GitHub deployment record `6279879317` and Vercel inspector `2rUohN2n7rxZeZBNbM36MvkZfzxW` reported Preview/non-production success.
 - Final-head preview checks: Overview, Prediction, Evaluation, and Explainability rendered; hosted Prediction remained read-only; educational disclaimer and “model inference API” wording were visible; active nav exposed `aria-current=page`; keyboard skip navigation and mobile sticky navigation were inspected; mobile widths 320, 334, 375, 390, and 640 were checked for overflow and chart/nav defects.
+- Subsequent branch-head changes in this record are documentation-only; the final PR check/deployment SHA is reported separately and the runtime UI is unchanged from the verified snapshot above.
 
 ## Security evidence
 
