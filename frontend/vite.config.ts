@@ -9,6 +9,14 @@ export default defineConfig({
     port: 5173,
   },
   test: {
+    exclude: [
+      "e2e/**",
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/storybook-static/**",
+      "**/playwright-report/**",
+      "**/test-results/**",
+    ],
     environment: "jsdom",
     globals: true,
     setupFiles: "./src/test/setup.ts",
