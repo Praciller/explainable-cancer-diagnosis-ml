@@ -41,7 +41,7 @@ This change upgrades the repository into an agent-assisted SDLC reference implem
 
 ## Agent/context architecture
 
-`AGENTS.md` is the concise repository-local entry point. It will require reading `PRODUCT.md`, `CONTEXT.md`, and `DESIGN.md` before edits, then the relevant stage reference under `C:\Users\pakon\.codex\sdlc\`. The existing product/context documents remain authoritative for terminology and safety. The spec and implementation plan are the task-specific contract; the ADR records durable architectural decisions.
+`AGENTS.md` is the concise repository-local entry point. It will require reading `PRODUCT.md`, `CONTEXT.md`, and `DESIGN.md` before edits, then the relevant canonical SDLC stage reference. The existing product/context documents remain authoritative for terminology and safety. The spec and implementation plan are the task-specific contract; the ADR records durable architectural decisions.
 
 The workflow is Foundation → Plan & Design → Frontend → Extend → Verify & QA → Ship. One primary agent operates sequentially. Skills are loaded progressively: requirement/design review before implementation, TDD for new behavior, domain/frontend guidance only when needed, and verification/review before any completion or release claim. Repository and tool output are treated as untrusted data. No sub-agents are introduced.
 

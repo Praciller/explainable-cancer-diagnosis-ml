@@ -44,7 +44,7 @@
 
 - [ ] **Step 1: Write the repository operating contract**
 
-  `AGENTS.md` must point to `PRODUCT.md`, `CONTEXT.md`, `DESIGN.md`, `C:\Users\pakon\.codex\sdlc\SDLC.md`, and the relevant stage documents. It must state the repository map, Python/frontend/package commands, generated-file rules, terminology/safety constraints, ML invariants, design-system rules, testing expectations, dependency policy, branch/PR rules, secret handling, and definition of done without copying the source documents.
+  `AGENTS.md` must point to `PRODUCT.md`, `CONTEXT.md`, `DESIGN.md`, the canonical SDLC index, and the relevant stage documents. It must state the repository map, Python/frontend/package commands, generated-file rules, terminology/safety constraints, ML invariants, design-system rules, testing expectations, dependency policy, branch/PR rules, secret handling, and definition of done without copying the source documents.
 
 - [ ] **Step 2: Rewrite the design contract without changing the product identity**
 
