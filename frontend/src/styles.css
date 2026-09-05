@@ -755,6 +755,11 @@ input {
   border-bottom: 1px solid var(--border);
 }
 
+.table-scroll:focus-visible {
+  outline: var(--focus-width) solid var(--focus);
+  outline-offset: var(--focus-offset);
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
