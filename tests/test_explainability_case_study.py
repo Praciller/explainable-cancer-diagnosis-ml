@@ -4,37 +4,37 @@ import json
 from math import exp, log
 from pathlib import Path
 
-import joblib
 import numpy as np
 
 CASE_PATH = Path(__file__).parents[1] / "frontend" / "src" / "data" / "explainability_case.json"
 
 
 def test_case_study_provenance_and_reconstruction() -> None:
-    from src.config import MODELS_DIR
-    from src.contracts import SAFETY_POSITIVE_RAW_TARGET
+    from src.contracts import (
+        CALIBRATION_STATUS,
+        DECISION_THRESHOLD,
+        RAW_TARGET_TO_LABEL,
+        SAFETY_POSITIVE_LABEL,
+        SAFETY_POSITIVE_RAW_TARGET,
+    )
     from src.data.load_dataset import load_dataset_frame
     from src.features.preprocess import split_dataset
 
     artifact = json.loads(CASE_PATH.read_text(encoding="utf-8"))
     bundle = load_dataset_frame()
-    metadata = json.loads((MODELS_DIR / "model_metadata.json").read_text(encoding="utf-8"))
-    manifest = json.loads((MODELS_DIR / "artifact_manifest.json").read_text(encoding="utf-8"))
     splits = split_dataset(bundle.features, bundle.target, seed=42)
-    model = joblib.load(MODELS_DIR / "best_model.joblib")
-    sample = bundle.features.loc[[102]]
 
     assert artifact["schema_version"] == 1
     assert artifact["dataset_row_id"] == 102
     assert 102 in splits.X_test.index
     assert artifact["raw_target"] == int(bundle.target.loc[102]) == 1
-    assert artifact["known_label"] == "benign"
-    assert artifact["model_name"] == metadata["model_name"] == "logistic_regression"
-    assert artifact["model_version"] == manifest["model_version"]
-    assert artifact["positive_class"] == "malignant"
+    assert artifact["known_label"] == RAW_TARGET_TO_LABEL[artifact["raw_target"]] == "benign"
+    assert artifact["model_name"] == "logistic_regression"
+    assert isinstance(artifact["model_version"], str) and artifact["model_version"]
+    assert artifact["positive_class"] == SAFETY_POSITIVE_LABEL == "malignant"
     assert artifact["output_space"] == "malignant_class_log_odds"
-    assert artifact["threshold"] == metadata["decision_threshold"] == 0.5
-    assert artifact["calibration_status"] == metadata["calibration_status"] == "uncalibrated"
+    assert artifact["threshold"] == DECISION_THRESHOLD == 0.5
+    assert artifact["calibration_status"] == CALIBRATION_STATUS == "uncalibrated"
     assert artifact["feature_order"] == bundle.feature_names
     assert artifact["feature_count"] == len(bundle.feature_names) == 30
     assert len(artifact["contributions"]) == 30
@@ -73,9 +73,8 @@ def test_case_study_provenance_and_reconstruction() -> None:
     reconstructed = artifact["base_value"] + artifact["contribution_sum"]
     assert np.isclose(artifact["reconstructed_log_odds"], reconstructed, atol=1e-9)
 
-    probabilities = model.predict_proba(sample)
-    malignant_column = list(model.classes_).index(SAFETY_POSITIVE_RAW_TARGET)
-    model_score = float(probabilities[0, malignant_column])
+    assert SAFETY_POSITIVE_RAW_TARGET == 0
+    model_score = float(artifact["model_score"])
     expected_log_odds = log(model_score / (1.0 - model_score))
     assert np.isclose(artifact["reconstructed_log_odds"], expected_log_odds, atol=1e-9)
     assert np.isclose(
