@@ -45,6 +45,8 @@ test.describe("hosted read-only showcase", () => {
 
     for (const viewport of [
       { width: 1440, height: 1000 },
+      { width: 1024, height: 900 },
+      { width: 640, height: 900 },
       { width: 390, height: 844 },
       { width: 332, height: 800 },
     ]) {

@@ -114,6 +114,33 @@ The artifact is derived evidence and must be regenerated through the documented
 command. It must not be edited manually to satisfy a test. Existing locked
 artifacts and `showcase_contract.json` remain byte-for-byte unchanged.
 
+## Provenance and ML governance
+
+The case artifact is presentation evidence derived from the existing
+`best_model.joblib`, `artifact_manifest.json`, dataset fingerprint, feature
+order, model metadata, and seed-42 split. The generator records the manifest
+model version and target mapping, while the Python test recomputes the score
+from the loaded model. The artifact is not a new evaluation set, metric source,
+threshold source, or API contract; no training, selection, calibration, test
+evaluation, or locked-evidence publication occurs for this feature.
+
+## Failure modes
+
+- If row 102 is absent from the seed-42 locked test split, generation fails
+  closed with an explicit error.
+- If the selected model, feature order, target mapping, model version, or SHAP
+  orientation disagrees with governed artifacts, generation and provenance
+  tests fail closed.
+- If any row value, base value, contribution, or score is non-finite, generation
+  fails closed and no artifact is written.
+- If SHAP reconstruction exceeds the documented tolerance, generation fails
+  closed; the UI never substitutes a hand-entered score.
+- If the artifact cannot be imported or the hosted page fails to load it, the
+  existing static figures remain the fallback and the release is blocked rather
+  than exposing inference.
+- If a viewport overflows or a serious/critical accessibility finding remains,
+  the feature is not ready for owner review.
+
 ## UI behavior
 
 Add a focused domain component, preferably
@@ -182,8 +209,8 @@ and must make no fetch or API request.
 - Extend Playwright hosted coverage to assert the case study is visible without
   FastAPI, has the expected row/model/score semantics, expands to all 30, and
   supports keyboard selection.
-- Verify exact viewports `1440px`, `390px`, and `332px` (the required narrow
-  mobile width between 320px and 334px).
+- Verify exact viewports `1440px`, `1024px`, `640px`, `390px`, and `332px` (the
+  required narrow mobile width between 320px and 334px).
 - Run serious/critical axe checks with zero violations at each required width,
   check the skip link/navigation active state, no horizontal overflow, and no
   material console errors.
@@ -216,7 +243,7 @@ and must make no fetch or API request.
   reconstruction are understandable without selecting a feature.
 - Given the reader activates `Show all 30 contributions`, when the expanded
   list renders, then all 30 feature contributions are present and the page has
-  no horizontal overflow at 1440px, 390px, or 332px.
+  no horizontal overflow at 1440px, 1024px, 640px, 390px, or 332px.
 - Given the reader selects a contribution row with mouse or keyboard, when the
   selection changes, then the selected feature's value, signed contribution,
   direction, and non-causal explanation are visible and announced by structure

@@ -94,7 +94,7 @@ or `neutral`. Sort by descending absolute contribution and feature-order index.
 
 - [ ] Write failing hosted assertions for navigation, row 102/model/score/reconstruction, expansion to 30, keyboard selection, absence of localhost API requests, no console errors, and `document.documentElement.scrollWidth <= window.innerWidth`.
 - [ ] Run `Set-Location frontend; npm run e2e:hosted -- showcase.spec.ts; Set-Location ..`; expected red failure is the missing case-study locator.
-- [ ] Parameterize hosted Explainability checks at 1440x1000, 390x844, and 332x800. Extend axe coverage to those widths and expect zero serious/critical violations. Keep local success backed by real FastAPI and do not mock success.
+- [ ] Parameterize hosted Explainability checks at 1440x1000, 1024x900, 640x900, 390x844, and 332x800. Extend axe coverage to all five widths and expect zero serious/critical violations. Keep local success backed by real FastAPI and do not mock success.
 - [ ] Run `npm run e2e:hosted`, generate local artifacts, start FastAPI on `127.0.0.1:8000`, run `npm run e2e:local`, then stop only the temporary API. Expected hosted and real local flows green.
 - [ ] Commit `test(browser): verify interactive explainability case study`.
 - [ ] After push creates the Vercel Git-integration Preview, inspect that Preview in real Chromium at all exact widths, capture the four named screenshots, and record Preview URL/source SHA. Do not use local/production screenshots or manually deploy.
@@ -123,4 +123,4 @@ or `neutral`. Sort by descending absolute contribution and feature-order index.
 - [ ] TDD red steps precede each production implementation task.
 - [ ] Generated artifact uses existing ML semantics and is not hand-authored.
 - [ ] Existing ML/API/terminology/accessibility/visual contracts and held migrations are protected.
-- [ ] Exact 1440px, 390px, and 332px browser checks plus Storybook, audit, bundle, and CI evidence are covered.
+- [ ] Exact 1440px, 1024px, 640px, 390px, and 332px browser checks plus Storybook, audit, bundle, and CI evidence are covered.
