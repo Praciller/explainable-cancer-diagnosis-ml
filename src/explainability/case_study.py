@@ -11,6 +11,8 @@ import numpy as np
 
 from src.config import MODELS_DIR, PROJECT_ROOT
 from src.contracts import (
+    CALIBRATION_STATUS,
+    DECISION_THRESHOLD,
     EDUCATIONAL_LIMITATION,
     RAW_TARGET_TO_LABEL,
     SAFETY_POSITIVE_LABEL,
@@ -35,9 +37,7 @@ def _direction(contribution: float) -> str:
     return "neutral"
 
 
-def generate_case_study_artifact(
-    output_path: Path = DEFAULT_OUTPUT_PATH,
-) -> dict[str, Any]:
+def build_case_study_artifact() -> dict[str, Any]:
     metadata_path = MODELS_DIR / "model_metadata.json"
     manifest_path = MODELS_DIR / "artifact_manifest.json"
     metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
@@ -46,9 +46,17 @@ def generate_case_study_artifact(
         raise ValueError("The explainability case study requires logistic_regression.")
     if manifest["selected_model"]["name"] != metadata["model_name"]:
         raise ValueError("Model metadata and artifact manifest selection disagree.")
+    if metadata["decision_threshold"] != DECISION_THRESHOLD:
+        raise ValueError("Model metadata decision threshold disagrees with the contract.")
+    if metadata["calibration_status"] != CALIBRATION_STATUS:
+        raise ValueError("Model metadata calibration status disagrees with the contract.")
 
     bundle = load_dataset_frame()
     splits = split_dataset(bundle.features, bundle.target, seed=int(metadata["random_seed"]))
+    if metadata["feature_names"] != bundle.feature_names:
+        raise ValueError("Model metadata feature order disagrees with the dataset contract.")
+    if manifest["feature_names"] != bundle.feature_names:
+        raise ValueError("Artifact manifest feature order disagrees with the dataset contract.")
     if DATASET_ROW_ID not in splits.X_test.index:
         raise ValueError("Dataset row 102 must belong to the locked test split.")
     if len(bundle.feature_names) != 30:
@@ -106,7 +114,7 @@ def generate_case_study_artifact(
         "model_version": manifest["model_version"],
         "positive_class": SAFETY_POSITIVE_LABEL,
         "output_space": "malignant_class_log_odds",
-        "threshold": float(metadata["decision_threshold"]),
+        "threshold": float(DECISION_THRESHOLD),
         "calibration_status": metadata["calibration_status"],
         "feature_order": bundle.feature_names,
         "feature_count": len(bundle.feature_names),
@@ -128,14 +136,49 @@ def generate_case_study_artifact(
         ),
         "educational_limitation": EDUCATIONAL_LIMITATION,
     }
+    return artifact
+
+
+def write_case_study_artifact(
+    artifact: dict[str, Any],
+    output_path: Path = DEFAULT_OUTPUT_PATH,
+) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(artifact, indent=2) + "\n", encoding="utf-8")
+
+
+def generate_case_study_artifact(
+    output_path: Path = DEFAULT_OUTPUT_PATH,
+) -> dict[str, Any]:
+    artifact = build_case_study_artifact()
+    write_case_study_artifact(artifact, output_path)
     return artifact
+
+
+def verify_case_study_artifact(
+    committed_path: Path = DEFAULT_OUTPUT_PATH,
+) -> None:
+    committed = json.loads(committed_path.read_text(encoding="utf-8"))
+    generated = build_case_study_artifact()
+    if committed != generated:
+        raise ValueError(
+            "Committed explainability case artifact does not match the current "
+            "model, manifest, dataset, and SHAP output."
+        )
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Generate the static explainability case study.")
-    parser.parse_args()
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="Verify the committed case artifact without writing to it.",
+    )
+    args = parser.parse_args()
+    if args.check:
+        verify_case_study_artifact()
+        print("Verified the committed explainability case artifact.")
+        return
     artifact = generate_case_study_artifact()
     print(
         f"Generated row {artifact['dataset_row_id']} explainability case "

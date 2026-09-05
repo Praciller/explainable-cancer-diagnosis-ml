@@ -92,6 +92,7 @@ jobs:
       - run: npm run e2e:hosted
         working-directory: frontend
       - run: python -m src.pipeline --seed 42 --mlp-epochs 100
+      - run: python -m src.explainability.case_study --check
       - run: |
           python -m uvicorn src.api.main:app --host 127.0.0.1 --port 8000 > api-e2e.log 2>&1 &
           echo $! > api-e2e.pid
