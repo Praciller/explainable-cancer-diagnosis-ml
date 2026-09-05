@@ -3,16 +3,18 @@
 ## Classification
 
 `PASS` — the Draft PR remains owner-gated, while local gates, current-head
-CI/CodeQL, Vercel Preview, and real Chromium verification are green.
+CI/CodeQL, Vercel Preview, and real Chromium verification are green. The
+cross-platform provenance gate now separates canonical byte identity from
+semantic replay identity.
 
 ## Source and artifact evidence
 
 - Baseline: `origin/main=0467ffabcff8d2c17de38e3a4fbaa1abaee64c1`
 - Branch: `feat/interactive-explainability-case-study`
-- Current head: `637c6c288724921a0558ef1517bcc32af6189288`
+- Implementation verification head: `9eb4da19448851f0f5399d42f33cc458c560049e`
+- This record is completed by a docs-only verification commit; the exact final
+  feature-head SHA is reported in the delivery response.
 - Draft PR: [#48](https://github.com/Praciller/explainable-cancer-diagnosis-ml/pull/48)
-- The final delivery head adds this evidence report as a docs-only commit; the
-  resulting SHA is reported in the delivery response.
 - Artifact: `frontend/src/data/explainability_case.json`
 - Artifact schema: `1`
 - Dataset row: `102`, locked test split, raw target `1`, known label `benign`
@@ -31,7 +33,17 @@ CI/CodeQL, Vercel Preview, and real Chromium verification are green.
 The generator `python -m src.explainability.case_study` derives the artifact
 from the existing model, manifest, dataset, seed-42 split, training background,
 SHAP orientation, and malignant-class score mapping. No training or API change
-is part of this feature.
+is part of this feature. ADR-0004 formalizes the distinction between the
+canonical byte-level model version and the replay model version generated on a
+different platform.
+
+The canonical case version remains exactly aligned with
+`frontend/src/data/showcase_contract.json`: `bbb5977c47501cd9a962`. CI replay
+generated `623b569e652282fdf7e8`; this binary identity mismatch is expected and
+is not promoted to canonical evidence. Semantic manifest fields, selected
+model, threshold, calibration, feature order, split assignment, all 86 locked
+test rows, and the row 102 SHAP reconstruction passed with `atol=1e-9` and
+`rtol=0`.
 
 Governed file Git object hashes, unchanged from `origin/main`:
 
@@ -60,14 +72,14 @@ contract diff for `src/api` and `src/contracts.py` is empty.
 - Limitation: existing educational-use disclaimer is retained.
 - Hosted behavior: case data is static JSON; no FastAPI or inference request is
   made in hosted mode.
-- Responsive checks: final Vercel Preview was inspected in authenticated real
-  Chromium at 1440px, 1024px, 640px, 390px, and 332px. At every width the
-  case study, reconstruction, disclaimer, and active Explainability state were
-  present. At 332px, document `clientWidth` and `scrollWidth` both measured
-  317px.
-- Accessibility: hosted axe scan has zero serious/critical findings across the
-  five widths and both Chromium projects; the real-browser keyboard flow
-  focused the skip link on Tab and `main#main-content` after Enter.
+- Responsive checks: implementation-head Vercel Preview was inspected in real
+  Chromium at 1440px, 390px, and 332px. At every width the case study,
+  reconstruction, disclaimer, and active Explainability state were present.
+  At 390px, document `clientWidth` and `scrollWidth` both measured 375px; at
+  332px they both measured 317px.
+- Accessibility: hosted CI axe scan has zero serious/critical findings across
+  the configured widths and Chromium projects; the real-browser keyboard flow
+  activated the skip link and focused `main#main-content` after Enter.
 - Interaction: real Chromium expanded all 30 contributions and selected
   `mean compactness` by keyboard; the selected detail panel was visible.
 - Console: final-preview Chromium inspection collected zero console `error`
@@ -76,12 +88,12 @@ contract diff for `src/api` and `src/contracts.py` is empty.
   The local preview was run on port 5173 because the unchanged API CORS contract
   allows `127.0.0.1:5173` and not the default 4173.
 
-Final Vercel Preview: https://explainable-cancer-diagnosis-fhy3c5fxu.vercel.app
-for head `637c6c288724921a0558ef1517bcc32af6189288`. Reviewer captures were
-made in real Chromium for `explainability-case-desktop.png`,
-`explainability-case-mobile-390.png`, `explainability-case-mobile-332.png`,
-and `explainability-case-feature-selected.png`; they are task evidence rather
-than committed browser output, per repository policy.
+Implementation-head Vercel Preview:
+https://explainable-cancer-diagnosis-kkxi2wbt6.vercel.app for head
+`9eb4da19448851f0f5399d42f33cc458c560049e`. The final docs-only commit's
+preview URL and exact head are reported in the delivery response. Reviewer
+captures are task evidence rather than committed browser output, per repository
+policy.
 
 ## Verification commands
 
@@ -90,7 +102,9 @@ Passing local results:
 - `ruff format --check src tests`
 - `ruff check src tests`
 - `python -m compileall -q src tests`
-- `python -m pytest` — `35 passed`
+- `python -m pytest` — `48 passed`
+- `python -m pytest --cov=src/api --cov=src/artifacts --cov-fail-under=90` —
+  `48 passed`, total coverage `91.29%`
 - `docker compose config --quiet`
 - `frontend/npm ci`
 - `frontend/npm audit --audit-level=high` — `0 vulnerabilities`
@@ -98,16 +112,19 @@ Passing local results:
 - `frontend/npm run typecheck`
 - `frontend/npm test -- --coverage` — `8 files, 17 tests passed`, `96.1%` statements
 - `frontend/npm run build`
-- `frontend/npm run check:bundle` — JS `544114/600000` bytes, CSS `20924/30000` bytes
+- `frontend/npm run check:bundle` — JS `544114/600000` bytes, CSS `20941/30000` bytes
 - `frontend/npm run build-storybook`
 - `frontend/npm run e2e:hosted -- showcase.spec.ts` — `6 passed`
 - `frontend/npm run e2e:hosted -- accessibility.spec.ts` — `6 passed`
 - `frontend/PLAYWRIGHT_PORT=5173 npm run e2e:local` — `8 passed, 8 skipped`
 
-Remote CI run `33983122818`: backend, frontend, browser, and packaging pass.
-- Remote CodeQL run `33983122821`: Analyze (python), Analyze
+Remote CI run `33987115511`: backend, frontend, browser, and packaging pass.
+The browser job preserved its required name and ran the single pipeline plus
+semantic replay check; CI reported 86 locked rows with target/classification
+parity and maximum score delta `5.662137425588298e-15`.
+- Remote CodeQL run `33987115494`: Analyze (python), Analyze
   (javascript-typescript), and CodeQL pass.
-- Vercel Preview deployment `6284160551`: success.
+- Vercel Preview deployment `6284897477`: success.
 
 ## Contracts and non-goals
 
@@ -118,6 +135,8 @@ Remote CI run `33983122818`: backend, frontend, browser, and packaging pass.
 - `DEPENDENCIES_CHANGED=NO`
 - `BRANCH_PROTECTION_CHANGED=NO`
 - `PRODUCTION_CHANGED=NO`
+- `MODEL_VERSION_ALGORITHM_CHANGED=NO`
+- `EXPLAINABILITY_CASE_ARTIFACT_CHANGED=NO`
 - Held migrations remain held: MLflow `3`, TypeScript `7`, jest-dom `7`, and
   pytest-cov `7`.
 - Dependabot PRs `#45` and `#46` were not modified.
@@ -126,7 +145,10 @@ Remote CI run `33983122818`: backend, frontend, browser, and packaging pass.
 
 The case study is one static educational dataset row and does not provide live
 inference, calibration, biological causality, clinical interpretation, or
-production evidence. The preview is not production; production remains
-owner-gated through the existing Git integration.
+production evidence. A regenerated model binary can have a different
+byte-level SHA and therefore a different replay model version; semantic replay
+is the cross-platform acceptance criterion and does not rewrite canonical
+evidence. The preview is not production; production remains owner-gated through
+the existing Git integration.
 
 `READY_FOR_OWNER_REVIEW=YES`
