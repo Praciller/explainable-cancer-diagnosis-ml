@@ -6,7 +6,12 @@ export function ModelComparisonTable({ report }: { report: EvaluationReport | nu
   }
 
   return (
-    <div className="table-scroll">
+    <div
+      className="table-scroll"
+      role="region"
+      aria-label="Validation-only candidate comparison table"
+      tabIndex={0}
+    >
       <table>
         <caption className="sr-only">
           Validation-only candidate comparison. Malignant is the positive class.
