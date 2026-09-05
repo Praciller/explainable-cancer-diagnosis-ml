@@ -10,6 +10,12 @@ updates:
         applies-to: version-updates
         patterns:
           - "*"
+        exclude-patterns:
+          - "scikit-learn"
+          - "shap"
+          - "torch"
+          - "mlflow"
+          - "starlette"
         update-types:
           - minor
           - patch
