@@ -1,4 +1,4 @@
-fastapi==0.139.2
+fastapi==0.141.1
 --extra-index-url https://download.pytorch.org/whl/cpu
 joblib==1.4.2
 matplotlib==3.10.3
