@@ -53,8 +53,11 @@ npm ci
 npm run lint
 npm run typecheck
 npm test
+npm test -- --coverage
 npm run build
+npm run check:bundle
 npm run build-storybook
+npm sbom --sbom-format cyclonedx > sbom.json
 ```
 
 Use the Vercel project’s owner-approved deployment workflow for a preview or production deployment. Do not invent project IDs, deployment IDs, environment values, or credentials in documentation. No production deployment or promotion was manually triggered. Vercel Git integration automatically created PR preview deployments.

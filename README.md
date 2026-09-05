@@ -4,7 +4,7 @@ An educational explainable tabular-ML system that compares classifiers on a gove
 
 > **Educational-use boundary:** This project is an educational machine-learning portfolio demonstration. It is not intended for diagnosis, screening, treatment, medical advice, or clinical decision-making.
 
-**Public showcase status:** [explainable-cancer-diagnosis-ml.vercel.app](https://explainable-cancer-diagnosis-ml.vercel.app/) is a public, read-only educational evidence dashboard. Chrome verification on 2026-08-30 confirmed the production deployment is `READY` at source main SHA `d0e279a302b497341a11fe6f97a8e10192e39636` (Vercel deployment `dpl_6rJNrmSHoSF6TjnUEyoHTFAL3cTT`). Live inference is not publicly exposed; dataset-row inference remains a local-mode capability.
+**Public showcase:** [explainable-cancer-diagnosis-ml.vercel.app](https://explainable-cancer-diagnosis-ml.vercel.app/) is a public, read-only educational evidence dashboard. Live inference is not publicly exposed; dataset-row inference remains a local-mode capability. Current live verification is kept separate from local and preview evidence in [`docs/verification/`](docs/verification/).
 
 ## Recruiter snapshot
 
@@ -29,7 +29,7 @@ Verified engineering outcomes:
 
 1. Read the dataset, label, split, and limitation contracts below.
 2. Inspect [`reports/model_comparison.md`](reports/model_comparison.md) and [`reports/error_analysis.md`](reports/error_analysis.md).
-3. Run `python -m pytest` and the frontend tests.
+3. Run the backend checks and frontend quality gates documented in [`AGENTS.md`](AGENTS.md).
 4. Run `python -m src.pipeline --seed 42 --mlp-epochs 100`.
 5. Start FastAPI, inspect `/ready`, `/model-info`, and one dataset-row `/predict` response.
 6. Start React and confirm that the public mode is read-only while local mode supports dataset-row inference.

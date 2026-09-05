@@ -303,6 +303,10 @@ p {
   background: transparent;
 }
 
+.sidebar nav button.active.button-text {
+  color: oklch(0.97 0.006 305);
+}
+
 .surface {
   min-width: 0;
 }

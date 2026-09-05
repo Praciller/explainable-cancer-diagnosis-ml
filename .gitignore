@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 .coverage
+coverage-backend.xml
 htmlcov/
 .mypy_cache/
 .ruff_cache/
@@ -17,6 +18,8 @@ models/*.json
 frontend/node_modules/
 frontend/dist/
 frontend/coverage/
+frontend/sbom.json
+pip-inventory.json
 frontend/storybook-static/
 frontend/playwright-report/
 frontend/test-results/
