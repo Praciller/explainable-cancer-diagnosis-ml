@@ -65,12 +65,16 @@ test.describe("hosted read-only showcase", () => {
         page.getByText(/Base value \+ local contributions = malignant-class log-odds/i),
       ).toBeVisible();
 
-      expect(await page.locator("html").evaluate((element) => element.scrollWidth)).toBeLessThanOrEqual(
-        viewport.width,
-      );
-      expect(await page.locator("body").evaluate((element) => element.scrollWidth)).toBeLessThanOrEqual(
-        viewport.width,
-      );
+      expect(
+        await page.locator("html").evaluate(
+          (element) => element.scrollWidth <= element.clientWidth,
+        ),
+      ).toBe(true);
+      expect(
+        await page.locator("body").evaluate(
+          (element) => element.scrollWidth <= document.documentElement.clientWidth,
+        ),
+      ).toBe(true);
       expect(requestUrls.some((url) => url.includes("127.0.0.1:8000"))).toBe(false);
 
       await expect(

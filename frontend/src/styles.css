@@ -1117,6 +1117,10 @@ tbody th small {
 }
 
 @media (max-width: 640px) {
+  body {
+    min-width: 0;
+  }
+
   .brand strong {
     display: none;
   }
