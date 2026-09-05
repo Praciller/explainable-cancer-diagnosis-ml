@@ -290,7 +290,7 @@
       "direction": "toward_malignant"
     }
   ],
-  "global_explanation": "Global importance summarizes recurring model behavior across governed rows; it is not a causal ranking.",
+  "global_explanation": "Global importance summarizes recurring model behavior across governed rows; contributions do not prove biological causality.",
   "local_explanation": "Local contributions describe how this supplied dataset row moved the selected model output in malignant-class log-odds space. Correlated measurements can share or redistribute importance.",
   "educational_limitation": "This project is an educational machine-learning portfolio demonstration. It is not intended for diagnosis, screening, treatment, medical advice, or clinical decision-making."
 }

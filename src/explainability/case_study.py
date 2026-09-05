@@ -119,7 +119,7 @@ def generate_case_study_artifact(
         "contributions": contributions,
         "global_explanation": (
             "Global importance summarizes recurring model behavior across governed rows; "
-            "it is not a causal ranking."
+            "contributions do not prove biological causality."
         ),
         "local_explanation": (
             "Local contributions describe how this supplied dataset row moved the selected "
