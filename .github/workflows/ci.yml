@@ -91,7 +91,13 @@ jobs:
         working-directory: frontend
       - run: npm run e2e:hosted
         working-directory: frontend
+      - name: Preserve canonical locked-test predictions
+        run: cp reports/locked_test_predictions.csv "$RUNNER_TEMP/canonical_locked_test_predictions.csv"
       - run: python -m src.pipeline --seed 42 --mlp-epochs 100
+      - name: Validate regenerated artifact manifest
+        run: python -c "from src.artifacts.manifest import validate_artifact_manifest; validate_artifact_manifest()"
+      - name: Verify semantic provenance replay
+        run: python -m src.explainability.case_study --check --canonical-locked-test "$RUNNER_TEMP/canonical_locked_test_predictions.csv"
       - run: |
           python -m uvicorn src.api.main:app --host 127.0.0.1 --port 8000 > api-e2e.log 2>&1 &
           echo $! > api-e2e.pid

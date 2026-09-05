@@ -34,4 +34,61 @@ test.describe("hosted read-only showcase", () => {
     await expect(page.locator("main")).toBeFocused();
     await expect(page.locator("body")).toHaveCSS("overflow-x", "visible");
   });
+
+  test("interacts with the static row-102 explainability case study", async ({ page }) => {
+    const consoleErrors: string[] = [];
+    const requestUrls: string[] = [];
+    page.on("console", (message) => {
+      if (message.type() === "error") consoleErrors.push(message.text());
+    });
+    page.on("request", (request) => requestUrls.push(request.url()));
+
+    for (const viewport of [
+      { width: 1440, height: 1000 },
+      { width: 1024, height: 900 },
+      { width: 640, height: 900 },
+      { width: 390, height: 844 },
+      { width: 332, height: 800 },
+    ]) {
+      await page.setViewportSize(viewport);
+      await page.goto("/");
+      const navigation = page.getByRole("navigation", { name: "Primary" });
+      const explainability = navigation.getByRole("button", { name: "Explainability" });
+      await explainability.click();
+      await expect(explainability).toHaveAttribute("aria-current", "page");
+      await expect(
+        page.getByRole("heading", { name: "Row 102 explainability case study" }),
+      ).toBeVisible();
+      await expect(page.getByText("logistic_regression")).toBeVisible();
+      await expect(page.getByText("0.008", { exact: true })).toBeVisible();
+      await expect(
+        page.getByText(/Base value \+ local contributions = malignant-class log-odds/i),
+      ).toBeVisible();
+
+      expect(
+        await page.locator("html").evaluate(
+          (element) => element.scrollWidth <= element.clientWidth,
+        ),
+      ).toBe(true);
+      expect(
+        await page.locator("body").evaluate(
+          (element) => element.scrollWidth <= document.documentElement.clientWidth,
+        ),
+      ).toBe(true);
+      expect(requestUrls.some((url) => url.includes("127.0.0.1:8000"))).toBe(false);
+
+      await expect(
+        page.getByRole("button", { name: /show all 30 contributions/i }),
+      ).toBeVisible();
+      await page.getByRole("button", { name: /show all 30 contributions/i }).click();
+      await expect(page.getByRole("button", { name: /feature contribution/i })).toHaveCount(30);
+      const feature = page.getByRole("button", { name: /worst texture feature contribution/i });
+      await feature.press("Enter");
+      await expect(
+        page.getByRole("region", { name: "Selected feature detail" }),
+      ).toContainText("worst texture");
+    }
+
+    expect(consoleErrors).toEqual([]);
+  });
 });

@@ -202,6 +202,8 @@ CI runs Python formatting/linting, compilation, backend tests, frontend audit/te
 
 The repository operating contract is [`AGENTS.md`](AGENTS.md), and the visual source of truth is [`DESIGN.md`](DESIGN.md). Architecture decisions live in [`docs/adr/`](docs/adr/); the frontend workflow adds lint/typecheck, Storybook component states, and Playwright browser verification. CI/security workflow details and the actual Vercel/local deployment boundary are documented in [`docs/deployment.md`](docs/deployment.md).
 
+The Explainability page includes an interactive row-102 case study that reconstructs a malignant-class model score from its governed SHAP contributions.
+
 For the full quality gate, run `npm run lint`, `npm run typecheck`, `npm run build-storybook`, and the hosted/local Playwright commands in `frontend/` in addition to the existing backend and packaging commands. Browser-visible changes require browser verification; local passing tests are not a deployment claim.
 
 ## Scope and limitations

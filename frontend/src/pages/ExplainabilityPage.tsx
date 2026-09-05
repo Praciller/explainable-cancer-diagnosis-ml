@@ -1,6 +1,11 @@
+import caseArtifact from "../data/explainability_case.json";
+import { ExplainabilityCaseStudy } from "../components/ExplainabilityCaseStudy";
 import { FeatureImportanceChart } from "../components/FeatureImportanceChart";
 import { ReportFigure } from "../components/ReportFigure";
 import { reportUrl } from "../services/api";
+import type { CaseStudyArtifact } from "../types/explainability";
+
+const typedCaseArtifact = caseArtifact as unknown as CaseStudyArtifact;
 
 export function ExplainabilityPage() {
   return (
@@ -24,6 +29,8 @@ export function ExplainabilityPage() {
           causality, medical importance, or why cancer develops.
         </p>
       </section>
+
+      <ExplainabilityCaseStudy artifact={typedCaseArtifact} />
 
       <section className="figure-grid">
         <FeatureImportanceChart />

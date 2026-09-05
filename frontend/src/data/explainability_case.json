@@ -1,0 +1,296 @@
+{
+  "schema_version": 1,
+  "dataset_row_id": 102,
+  "raw_target": 1,
+  "known_label": "benign",
+  "model_name": "logistic_regression",
+  "model_version": "bbb5977c47501cd9a962",
+  "positive_class": "malignant",
+  "output_space": "malignant_class_log_odds",
+  "threshold": 0.5,
+  "calibration_status": "uncalibrated",
+  "feature_order": [
+    "mean radius",
+    "mean texture",
+    "mean perimeter",
+    "mean area",
+    "mean smoothness",
+    "mean compactness",
+    "mean concavity",
+    "mean concave points",
+    "mean symmetry",
+    "mean fractal dimension",
+    "radius error",
+    "texture error",
+    "perimeter error",
+    "area error",
+    "smoothness error",
+    "compactness error",
+    "concavity error",
+    "concave points error",
+    "symmetry error",
+    "fractal dimension error",
+    "worst radius",
+    "worst texture",
+    "worst perimeter",
+    "worst area",
+    "worst smoothness",
+    "worst compactness",
+    "worst concavity",
+    "worst concave points",
+    "worst symmetry",
+    "worst fractal dimension"
+  ],
+  "feature_count": 30,
+  "base_value": -0.5770589234377406,
+  "contribution_sum": -4.199147683081785,
+  "reconstructed_log_odds": -4.776206606519525,
+  "model_score": 0.008357472762137497,
+  "reconstruction_error": 2.6645352591003757e-15,
+  "reconstruction_tolerance": 1e-09,
+  "contributions": [
+    {
+      "rank": 1,
+      "feature": "worst texture",
+      "value": 32.84,
+      "contribution": 1.4698021638113137,
+      "absolute_contribution": 1.4698021638113137,
+      "direction": "toward_malignant"
+    },
+    {
+      "rank": 2,
+      "feature": "mean compactness",
+      "value": 0.04038,
+      "contribution": 0.8125314294633192,
+      "absolute_contribution": 0.8125314294633192,
+      "direction": "toward_malignant"
+    },
+    {
+      "rank": 3,
+      "feature": "radius error",
+      "value": 0.1924,
+      "contribution": -0.7674756664349092,
+      "absolute_contribution": 0.7674756664349092,
+      "direction": "away_from_malignant"
+    },
+    {
+      "rank": 4,
+      "feature": "worst smoothness",
+      "value": 0.1123,
+      "contribution": -0.7341274971777302,
+      "absolute_contribution": 0.7341274971777302,
+      "direction": "away_from_malignant"
+    },
+    {
+      "rank": 5,
+      "feature": "area error",
+      "value": 14.68,
+      "contribution": -0.6309673779302949,
+      "absolute_contribution": 0.6309673779302949,
+      "direction": "away_from_malignant"
+    },
+    {
+      "rank": 6,
+      "feature": "worst concave points",
+      "value": 0.07431,
+      "contribution": -0.6090268304422899,
+      "absolute_contribution": 0.6090268304422899,
+      "direction": "away_from_malignant"
+    },
+    {
+      "rank": 7,
+      "feature": "worst concavity",
+      "value": 0.1145,
+      "contribution": -0.6061220275011625,
+      "absolute_contribution": 0.6061220275011625,
+      "direction": "away_from_malignant"
+    },
+    {
+      "rank": 8,
+      "feature": "compactness error",
+      "value": 0.006098,
+      "contribution": 0.5739690687852615,
+      "absolute_contribution": 0.5739690687852615,
+      "direction": "toward_malignant"
+    },
+    {
+      "rank": 9,
+      "feature": "worst area",
+      "value": 547.8,
+      "contribution": -0.5054759751110827,
+      "absolute_contribution": 0.5054759751110827,
+      "direction": "away_from_malignant"
+    },
+    {
+      "rank": 10,
+      "feature": "worst radius",
+      "value": 13.34,
+      "contribution": -0.5001060583778175,
+      "absolute_contribution": 0.5001060583778175,
+      "direction": "away_from_malignant"
+    },
+    {
+      "rank": 11,
+      "feature": "mean concave points",
+      "value": 0.0177,
+      "contribution": -0.49178256260899794,
+      "absolute_contribution": 0.49178256260899794,
+      "direction": "away_from_malignant"
+    },
+    {
+      "rank": 12,
+      "feature": "worst perimeter",
+      "value": 84.58,
+      "contribution": -0.44028390598674266,
+      "absolute_contribution": 0.44028390598674266,
+      "direction": "away_from_malignant"
+    },
+    {
+      "rank": 13,
+      "feature": "mean concavity",
+      "value": 0.02383,
+      "contribution": -0.4342827000105511,
+      "absolute_contribution": 0.4342827000105511,
+      "direction": "away_from_malignant"
+    },
+    {
+      "rank": 14,
+      "feature": "worst symmetry",
+      "value": 0.2694,
+      "contribution": -0.34787022489704955,
+      "absolute_contribution": 0.34787022489704955,
+      "direction": "away_from_malignant"
+    },
+    {
+      "rank": 15,
+      "feature": "fractal dimension error",
+      "value": 0.001532,
+      "contribution": 0.292316154149875,
+      "absolute_contribution": 0.292316154149875,
+      "direction": "toward_malignant"
+    },
+    {
+      "rank": 16,
+      "feature": "texture error",
+      "value": 1.571,
+      "contribution": -0.2542209342107318,
+      "absolute_contribution": 0.2542209342107318,
+      "direction": "away_from_malignant"
+    },
+    {
+      "rank": 17,
+      "feature": "mean area",
+      "value": 458.7,
+      "contribution": -0.24709278888708663,
+      "absolute_contribution": 0.24709278888708663,
+      "direction": "away_from_malignant"
+    },
+    {
+      "rank": 18,
+      "feature": "symmetry error",
+      "value": 0.01447,
+      "contribution": 0.23963752193385254,
+      "absolute_contribution": 0.23963752193385254,
+      "direction": "toward_malignant"
+    },
+    {
+      "rank": 19,
+      "feature": "mean perimeter",
+      "value": 77.22,
+      "contribution": -0.22909718358010925,
+      "absolute_contribution": 0.22909718358010925,
+      "direction": "away_from_malignant"
+    },
+    {
+      "rank": 20,
+      "feature": "mean smoothness",
+      "value": 0.08013,
+      "contribution": -0.21671500588421605,
+      "absolute_contribution": 0.21671500588421605,
+      "direction": "away_from_malignant"
+    },
+    {
+      "rank": 21,
+      "feature": "mean radius",
+      "value": 12.18,
+      "contribution": -0.2160165108642053,
+      "absolute_contribution": 0.2160165108642053,
+      "direction": "away_from_malignant"
+    },
+    {
+      "rank": 22,
+      "feature": "concave points error",
+      "value": 0.006797,
+      "contribution": -0.21011838966922491,
+      "absolute_contribution": 0.21011838966922491,
+      "direction": "away_from_malignant"
+    },
+    {
+      "rank": 23,
+      "feature": "perimeter error",
+      "value": 1.183,
+      "contribution": -0.192127905820377,
+      "absolute_contribution": 0.192127905820377,
+      "direction": "away_from_malignant"
+    },
+    {
+      "rank": 24,
+      "feature": "mean texture",
+      "value": 20.52,
+      "contribution": 0.17207030979017862,
+      "absolute_contribution": 0.17207030979017862,
+      "direction": "toward_malignant"
+    },
+    {
+      "rank": 25,
+      "feature": "worst fractal dimension",
+      "value": 0.06878,
+      "contribution": -0.14853128869055032,
+      "absolute_contribution": 0.14853128869055032,
+      "direction": "away_from_malignant"
+    },
+    {
+      "rank": 26,
+      "feature": "smoothness error",
+      "value": 0.00508,
+      "contribution": -0.12065552356755416,
+      "absolute_contribution": 0.12065552356755416,
+      "direction": "away_from_malignant"
+    },
+    {
+      "rank": 27,
+      "feature": "concavity error",
+      "value": 0.01069,
+      "contribution": 0.11359687197269834,
+      "absolute_contribution": 0.11359687197269834,
+      "direction": "toward_malignant"
+    },
+    {
+      "rank": 28,
+      "feature": "mean symmetry",
+      "value": 0.1739,
+      "contribution": -0.043960851118594116,
+      "absolute_contribution": 0.043960851118594116,
+      "direction": "away_from_malignant"
+    },
+    {
+      "rank": 29,
+      "feature": "worst compactness",
+      "value": 0.08862,
+      "contribution": 0.03772510749807883,
+      "absolute_contribution": 0.03772510749807883,
+      "direction": "toward_malignant"
+    },
+    {
+      "rank": 30,
+      "feature": "mean fractal dimension",
+      "value": 0.05677,
+      "contribution": 0.03526089828491584,
+      "absolute_contribution": 0.03526089828491584,
+      "direction": "toward_malignant"
+    }
+  ],
+  "global_explanation": "Global importance summarizes recurring model behavior across governed rows; contributions do not prove biological causality.",
+  "local_explanation": "Local contributions describe how this supplied dataset row moved the selected model output in malignant-class log-odds space. Correlated measurements can share or redistribute importance.",
+  "educational_limitation": "This project is an educational machine-learning portfolio demonstration. It is not intended for diagnosis, screening, treatment, medical advice, or clinical decision-making."
+}

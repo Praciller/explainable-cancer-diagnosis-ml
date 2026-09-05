@@ -16,6 +16,16 @@ python -m src.pipeline --seed 42 --mlp-epochs 100
 uvicorn src.api.main:app --host 127.0.0.1 --port 8000
 ```
 
+The interactive Explainability case study is generated from the existing
+governed model and seed-42 split with:
+
+```powershell
+python -m src.explainability.case_study
+```
+
+This writes static presentation data for the hosted read-only showcase; it
+does not expose or deploy live inference.
+
 In a second terminal:
 
 ```powershell

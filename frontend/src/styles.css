@@ -836,6 +836,170 @@ tbody th small {
   margin-bottom: 0;
 }
 
+.explainability-case-study {
+  display: grid;
+  gap: var(--space-2xl);
+  min-width: 0;
+  padding: 28px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+}
+
+.case-study-heading,
+.case-study-section-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-xl);
+}
+
+.case-study-heading h2,
+.case-study-heading p,
+.case-study-section-heading p,
+.case-study-reconstruction p:last-child,
+.case-study-selected-detail p,
+.case-study-explanation-columns p {
+  margin-bottom: 0;
+}
+
+.case-study-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.case-study-metrics .metric {
+  padding: 20px;
+}
+
+.case-study-metrics .metric + .metric {
+  border-left: 1px solid var(--border);
+}
+
+.case-study-reconstruction,
+.case-study-selected-detail {
+  display: grid;
+  gap: var(--space-md);
+  min-width: 0;
+  padding-top: var(--space-xl);
+  border-top: 1px solid var(--border);
+}
+
+.case-study-reconstruction h3,
+.case-study-selected-detail h3,
+.case-study-explanation-columns h3 {
+  margin-bottom: 0;
+}
+
+.case-study-equation-label {
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 650;
+}
+
+.case-study-equation {
+  margin: 0;
+  color: var(--text);
+  font-size: 1.25rem;
+  font-variant-numeric: var(--font-variant-numeric);
+  overflow-wrap: anywhere;
+}
+
+.case-study-section-heading > div {
+  min-width: 0;
+}
+
+.case-study-contribution-list {
+  display: grid;
+  gap: var(--space-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.case-study-contribution-list li {
+  min-width: 0;
+}
+
+.case-study-contribution {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-lg);
+  width: 100%;
+  min-height: var(--target-min);
+  padding: 9px 12px;
+  color: var(--text);
+  text-align: left;
+  background: var(--canvas);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  cursor: pointer;
+}
+
+.case-study-contribution:hover,
+.case-study-contribution.selected {
+  background: var(--surface-strong);
+  border-color: var(--accent);
+}
+
+.case-study-contribution-copy {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-xs);
+}
+
+.case-study-contribution-copy strong,
+.case-study-contribution-copy small {
+  overflow-wrap: anywhere;
+}
+
+.case-study-contribution-copy small {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.case-study-contribution-value {
+  flex: 0 0 auto;
+  font-variant-numeric: var(--font-variant-numeric);
+}
+
+.case-study-selected-detail dl {
+  display: grid;
+  gap: 0;
+  margin: 0;
+}
+
+.case-study-selected-detail dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-lg);
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.case-study-selected-detail dt {
+  color: var(--muted);
+}
+
+.case-study-selected-detail dd {
+  margin: 0;
+  font-variant-numeric: var(--font-variant-numeric);
+  font-weight: 650;
+  text-align: right;
+}
+
+.case-study-explanation-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-xl);
+  padding-top: var(--space-xl);
+  border-top: 1px solid var(--border);
+}
+
 .loading-state {
   width: min(760px, 100%);
   margin: 80px auto;
@@ -953,6 +1117,10 @@ tbody th small {
 }
 
 @media (max-width: 640px) {
+  body {
+    min-width: 0;
+  }
+
   .brand strong {
     display: none;
   }
@@ -998,6 +1166,27 @@ tbody th small {
   .empty-result,
   .explanation-note {
     padding: 20px;
+  }
+
+  .explainability-case-study {
+    padding: 20px;
+  }
+
+  .case-study-heading,
+  .case-study-section-heading,
+  .case-study-explanation-columns {
+    grid-template-columns: 1fr;
+    flex-direction: column;
+  }
+
+  .case-study-metrics,
+  .case-study-explanation-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .case-study-metrics .metric + .metric {
+    border-top: 1px solid var(--border);
+    border-left: 0;
   }
 
   .explanation-note {
