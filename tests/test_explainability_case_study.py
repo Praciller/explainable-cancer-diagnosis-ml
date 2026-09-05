@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from math import exp, log
 from pathlib import Path
@@ -8,6 +9,8 @@ import numpy as np
 import pytest
 
 CASE_PATH = Path(__file__).parents[1] / "frontend" / "src" / "data" / "explainability_case.json"
+SHOWCASE_PATH = CASE_PATH.with_name("showcase_contract.json")
+LOCKED_TEST_PATH = CASE_PATH.parents[3] / "reports" / "locked_test_predictions.csv"
 MODEL_ARTIFACTS = (
     CASE_PATH.parents[3] / "models" / "best_model.joblib",
     CASE_PATH.parents[3] / "models" / "model_metadata.json",
@@ -96,12 +99,48 @@ def test_case_study_provenance_and_reconstruction() -> None:
     assert artifact["reconstruction_error"] <= artifact["reconstruction_tolerance"]
 
 
+def test_case_study_canonical_identity_matches_showcase_contract() -> None:
+    from src.explainability.case_study import verify_canonical_case_identity
+
+    case = json.loads(CASE_PATH.read_text(encoding="utf-8"))
+    showcase = json.loads(SHOWCASE_PATH.read_text(encoding="utf-8"))
+
+    verify_canonical_case_identity(case, showcase)
+
+
+def test_case_study_rejects_canonical_model_version_drift() -> None:
+    from src.explainability.case_study import verify_canonical_case_identity
+
+    case = json.loads(CASE_PATH.read_text(encoding="utf-8"))
+    showcase = json.loads(SHOWCASE_PATH.read_text(encoding="utf-8"))
+    case["model_version"] = "stale-version"
+
+    with pytest.raises(ValueError, match="(?i)canonical model version"):
+        verify_canonical_case_identity(case, showcase)
+
+
 def test_case_study_check_matches_current_model_artifacts() -> None:
     _skip_without_model_artifacts()
 
     from src.explainability.case_study import verify_case_study_artifact
 
+    before = hashlib.sha256(CASE_PATH.read_bytes()).hexdigest()
     verify_case_study_artifact(CASE_PATH)
+    assert hashlib.sha256(CASE_PATH.read_bytes()).hexdigest() == before
+
+
+def test_case_study_check_accepts_tiny_numeric_replay_drift(tmp_path: Path) -> None:
+    _skip_without_model_artifacts()
+
+    from src.explainability.case_study import verify_case_study_artifact
+
+    candidate = json.loads(CASE_PATH.read_text(encoding="utf-8"))
+    candidate["contributions"][0]["contribution"] += 1e-12
+    candidate["contributions"][0]["absolute_contribution"] += 1e-12
+    candidate_path = tmp_path / "explainability_case.json"
+    candidate_path.write_text(json.dumps(candidate), encoding="utf-8")
+
+    verify_case_study_artifact(candidate_path)
 
 
 @pytest.mark.parametrize(
@@ -123,7 +162,7 @@ def test_case_study_check_rejects_stale_provenance(
     candidate_path = tmp_path / "explainability_case.json"
     candidate_path.write_text(json.dumps(candidate), encoding="utf-8")
 
-    with pytest.raises(ValueError, match="does not match"):
+    with pytest.raises(ValueError, match="(?i)replay failed|canonical"):
         verify_case_study_artifact(candidate_path)
 
 
@@ -137,5 +176,63 @@ def test_case_study_check_rejects_stale_contribution(tmp_path: Path) -> None:
     candidate_path = tmp_path / "explainability_case.json"
     candidate_path.write_text(json.dumps(candidate), encoding="utf-8")
 
-    with pytest.raises(ValueError, match="does not match"):
+    with pytest.raises(ValueError, match="(?i)drift"):
         verify_case_study_artifact(candidate_path)
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("model_name", "stale-model"),
+        ("dataset_fingerprint", "stale-dataset"),
+        ("split_assignment", "stale-split"),
+    ],
+)
+def test_case_study_rejects_stale_semantic_manifest(tmp_path: Path, field: str, value: str) -> None:
+    _skip_without_model_artifacts()
+
+    from src.explainability.case_study import verify_case_study_artifact
+
+    showcase = json.loads(SHOWCASE_PATH.read_text(encoding="utf-8"))
+    if field == "model_name":
+        showcase["model_info"]["model_name"] = value
+        showcase["evaluation"]["selected_model"] = value
+    elif field == "dataset_fingerprint":
+        showcase["model_info"]["dataset_fingerprint"] = value
+        showcase["dataset"]["fingerprint_sha256"] = value
+    else:
+        showcase["evaluation"]["split"]["assignment_sha256"] = value
+    showcase_path = tmp_path / "showcase_contract.json"
+    showcase_path.write_text(json.dumps(showcase), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="(?i)canonical|semantic manifest"):
+        verify_case_study_artifact(CASE_PATH, showcase_path=showcase_path)
+
+
+def test_locked_test_replay_matches_all_governed_rows() -> None:
+    _skip_without_model_artifacts()
+
+    from src.explainability.case_study import verify_locked_test_replay
+
+    report = verify_locked_test_replay(LOCKED_TEST_PATH)
+
+    assert report["rows"] == 86
+    assert report["max_score_delta"] <= 1e-9
+
+
+@pytest.mark.parametrize("column", ["predicted_raw_target", "malignant_class_score"])
+def test_locked_test_replay_rejects_class_or_score_drift(tmp_path: Path, column: str) -> None:
+    _skip_without_model_artifacts()
+
+    from src.explainability.case_study import verify_locked_test_replay
+
+    lines = LOCKED_TEST_PATH.read_text(encoding="utf-8").splitlines()
+    headers = lines[0].split(",")
+    values = lines[1].split(",")
+    index = headers.index(column)
+    values[index] = str(1 - int(values[index])) if column == "predicted_raw_target" else "0.5"
+    candidate_path = tmp_path / "locked_test_predictions.csv"
+    candidate_path.write_text("\n".join([lines[0], ",".join(values), *lines[2:]]) + "\n")
+
+    with pytest.raises(ValueError, match="(?i)locked-test"):
+        verify_locked_test_replay(candidate_path)

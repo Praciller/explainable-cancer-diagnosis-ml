@@ -54,7 +54,7 @@ explainability semantics. It is not a new source of ML truth.
 | Raw target | `1` |
 | Known label | `benign` |
 | Selected model | `logistic_regression` |
-| Model version | Read from the current artifact manifest; expected baseline value `bbb5977c47501cd9a962` |
+| Canonical model version | Exact match to `showcase_contract.json`; expected value `bbb5977c47501cd9a962` |
 | Feature count | `30` |
 | Feature order | Exact `bundle.feature_names` order, unchanged |
 | SHAP orientation | Existing `_shap_values` malignant-class orientation |
@@ -118,19 +118,30 @@ artifacts and `showcase_contract.json` remain byte-for-byte unchanged.
 
 The case artifact is presentation evidence derived from the existing
 `best_model.joblib`, `artifact_manifest.json`, dataset fingerprint, feature
-order, model metadata, and seed-42 split. The generator records the manifest
-model version and target mapping, while the Python test recomputes the score
-from the loaded model. The artifact is not a new evaluation set, metric source,
-threshold source, or API contract; no training, selection, calibration, test
-evaluation, or locked-evidence publication occurs for this feature.
+order, model metadata, and seed-42 split. Its canonical model version must
+match the published `showcase_contract.json` exactly. Because `model_version`
+includes the binary model SHA and model binaries are not committed, a fresh CI
+replay may produce a different binary identity across supported environments.
+
+CI therefore separates canonical artifact provenance from semantic replay
+provenance. It validates the regenerated manifest, independently reproduces all
+86 locked-test outputs and row-102 score, and compares row-102 SHAP values with
+`rtol=0` and `atol=1e-9`. The replay model version is reported separately and
+never promoted to canonical evidence. The artifact is not a new evaluation
+set, metric source, threshold source, or API contract; no training, selection,
+calibration, test-evidence publication, or canonical-file rewrite occurs for
+this feature.
 
 ## Failure modes
 
 - If row 102 is absent from the seed-42 locked test split, generation fails
   closed with an explicit error.
-- If the selected model, feature order, target mapping, model version, or SHAP
-  orientation disagrees with governed artifacts, generation and provenance
-  tests fail closed.
+- If the selected model, feature order, target mapping, canonical model version,
+  or SHAP orientation disagrees with governed artifacts, generation and
+  provenance tests fail closed.
+- If the canonical case model version disagrees with the published showcase
+  contract, verification fails closed. A replay binary version may differ only
+  when all semantic manifest, locked-test, score, and SHAP checks pass.
 - If any row value, base value, contribution, or score is non-finite, generation
   fails closed and no artifact is written.
 - If SHAP reconstruction exceeds the documented tolerance, generation fails
@@ -189,6 +200,13 @@ and must make no fetch or API request.
 
 - Add a focused Python test for the generated case artifact and its model/data
   provenance.
+- Keep canonical identity checks exact against `showcase_contract.json`, while
+  comparing replay numerics with `rtol=0` and `atol=1e-9`.
+- Preserve the canonical locked-test CSV before pipeline regeneration and
+  verify all 86 row IDs, targets, classifications, and malignant-class scores
+  against the freshly loaded model.
+- Report canonical and replay model versions separately; do not compare
+  runtime metadata or binary hashes as semantic identity.
 - Verify the current backend/API contract tests still pass without source or
   schema changes.
 - Verify no governed ML evidence, locked artifact hash, or showcase-contract
@@ -215,6 +233,9 @@ and must make no fetch or API request.
   check the skip link/navigation active state, no horizontal overflow, and no
   material console errors.
 - Keep the existing real-FastAPI local E2E success path unchanged.
+- Run the semantic replay check after pipeline generation in the existing
+  `browser` job without changing the required check name or adding a second
+  expensive pipeline run.
 - Capture clean PR-preview screenshots at the named widths after the preview
   deployment is available. Do not use a local or production screenshot as
   preview evidence.
@@ -255,6 +276,11 @@ and must make no fetch or API request.
   when the feature branch is tested, then those artifacts, hosted read-only
   behavior, API schemas, terminology, accessibility contracts, and local real
   inference flow remain unchanged.
+- Given CI regenerates model artifacts on a supported runtime, when the
+  semantic replay gates run, then the canonical model version remains exact,
+  the replay version is reported separately, all 86 locked-test outputs and
+  row-102 SHAP evidence remain within `rtol=0` and `atol=1e-9`, and no governed
+  evidence is rewritten.
 - Given CI and the PR preview are available, when lint, typecheck, unit,
   backend, packaging, Storybook, Playwright, accessibility, security, and
   bundle gates run, then they pass without dependency migration or governed
