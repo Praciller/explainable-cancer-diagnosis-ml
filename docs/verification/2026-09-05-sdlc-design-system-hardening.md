@@ -49,6 +49,7 @@ Feature branch: `chore/sdlc-design-system-hardening`
 - Complete compact inventory: 41 changed files reviewed by the parent process because delegated workers were unavailable.
 - Findings: 0 reportable findings; coverage complete.
 - `npm audit --audit-level=high`: PASS, 0 vulnerabilities.
+- GitHub Dependency Review: UNAVAILABLE because the repository Dependency Graph is disabled; the unsupported workflow was removed rather than treated as a passing gate.
 - TAC status was not available because the security-access connector was not connected; this is an advisory limitation and not a code finding.
 
 ## Release boundary
