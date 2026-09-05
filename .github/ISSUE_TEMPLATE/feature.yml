@@ -1,0 +1,41 @@
+name: Feature or change
+description: Propose a bounded, testable repository change.
+title: "feat: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem and user value
+      description: What problem does this solve for a reviewer, learner, or developer?
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope and non-goals
+      description: State affected areas and what must remain unchanged.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Given / When / Then acceptance criteria
+      placeholder: "Given ...\nWhen ...\nThen ..."
+    validations:
+      required: true
+  - type: textarea
+    id: contracts
+    attributes:
+      label: ML, data, terminology, and safety impact
+      description: Explain whether target orientation, feature order, artifacts, API, generated evidence, or educational copy is affected.
+    validations:
+      required: true
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification and browser evidence
+      description: List exact tests, commands, screenshots, and live/preview boundaries.
+    validations:
+      required: true

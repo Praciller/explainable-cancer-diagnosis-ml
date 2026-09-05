@@ -2,6 +2,7 @@ import { ArrowRight, Database, GitCompareArrows, ScanSearch } from "lucide-react
 
 import { DisclaimerBanner } from "../components/DisclaimerBanner";
 import { MetricCard } from "../components/MetricCard";
+import { Button } from "../components/ui";
 import type { EvaluationReport, ModelInfo } from "../types/api";
 
 interface OverviewPageProps {
@@ -24,9 +25,9 @@ export function OverviewPage({ modelInfo, evaluation, onStart }: OverviewPagePro
             set, and trace the selected model without claiming clinical meaning.
           </p>
         </div>
-        <button className="button button-primary" type="button" onClick={onStart}>
+        <Button type="button" onClick={onStart}>
           Review the workflow <ArrowRight aria-hidden="true" size={18} />
-        </button>
+        </Button>
       </header>
 
       <DisclaimerBanner />

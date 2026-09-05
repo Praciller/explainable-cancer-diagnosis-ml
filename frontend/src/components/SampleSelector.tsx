@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import type { SampleRecord } from "../types/api";
+import { Button } from "./ui";
 
 interface SampleSelectorProps {
   samples: SampleRecord[];
@@ -9,15 +10,12 @@ interface SampleSelectorProps {
 
 export function SampleSelector({ samples, onSelect }: SampleSelectorProps) {
   const [selectedId, setSelectedId] = useState(samples[0]?.dataset_row_id.toString() ?? "");
-
-  useEffect(() => {
-    if (!selectedId && samples[0]) {
-      setSelectedId(samples[0].dataset_row_id.toString());
-    }
-  }, [samples, selectedId]);
+  const effectiveSelectedId = selectedId || samples[0]?.dataset_row_id.toString() || "";
 
   const loadSample = () => {
-    const selected = samples.find((sample) => sample.dataset_row_id.toString() === selectedId);
+    const selected = samples.find(
+      (sample) => sample.dataset_row_id.toString() === effectiveSelectedId,
+    );
     if (selected) onSelect(selected);
   };
 
@@ -27,7 +25,7 @@ export function SampleSelector({ samples, onSelect }: SampleSelectorProps) {
         <label htmlFor="sample-record">Sample record</label>
         <select
           id="sample-record"
-          value={selectedId}
+          value={effectiveSelectedId}
           onChange={(event) => setSelectedId(event.target.value)}
         >
           {samples.map((sample) => (
@@ -37,9 +35,9 @@ export function SampleSelector({ samples, onSelect }: SampleSelectorProps) {
           ))}
         </select>
       </div>
-      <button className="button button-secondary" type="button" onClick={loadSample}>
+      <Button variant="secondary" type="button" onClick={loadSample}>
         Load sample
-      </button>
+      </Button>
     </div>
   );
 }

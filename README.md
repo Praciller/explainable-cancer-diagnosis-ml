@@ -198,6 +198,12 @@ docker compose config --quiet
 
 CI runs Python formatting/linting, compilation, backend tests, frontend audit/tests/build, and Compose validation. Regression tests cover dataset and label contracts, class-score orientation, split determinism, train-only scaling, validation-only selection, metric orientation, SHAP reconstruction, artifact checksums, strict API validation, OOD warnings, request size, safety copy, generated frontend evidence, local links, and machine-path guardrails.
 
+## Agent-assisted quality workflow
+
+The repository operating contract is [`AGENTS.md`](AGENTS.md), and the visual source of truth is [`DESIGN.md`](DESIGN.md). Architecture decisions live in [`docs/adr/`](docs/adr/); the frontend workflow adds lint/typecheck, Storybook component states, and Playwright browser verification. CI/security workflow details and the actual Vercel/local deployment boundary are documented in [`docs/deployment.md`](docs/deployment.md).
+
+For the full quality gate, run `npm run lint`, `npm run typecheck`, `npm run build-storybook`, and the hosted/local Playwright commands in `frontend/` in addition to the existing backend and packaging commands. Browser-visible changes require browser verification; local passing tests are not a deployment claim.
+
 ## Scope and limitations
 
 - This is one deterministic split of a small, clean educational dataset.
