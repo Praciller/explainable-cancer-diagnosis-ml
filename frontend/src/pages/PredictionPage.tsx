@@ -36,7 +36,7 @@ export function PredictionPage({
             <span className="section-label">Prediction workspace</span>
           <h1>Live inference stays local for v1.</h1>
             <p>
-              The hosted frontend presents measured model evidence without deploying the medical
+              The hosted frontend presents measured model evidence without deploying the model
               inference API to a general-purpose frontend platform.
             </p>
           </div>
